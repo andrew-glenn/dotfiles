@@ -42,7 +42,9 @@ _toggle_mouse() {
 
    tmux set -qg mode-mouse $onsv \;\
        set -qg mouse-resize-pane $onsv\;\
-       display "Mouse Resize: [$onsv]"
+       set -qg mouse-select-pane $onsv\;\
+       set -qg mouse-select-window $onsv\;\
+       display "Mouse Mode: [$onsv]"
 }
 
 _toggle_pane_sync(){
