@@ -31,25 +31,28 @@ call plug#begin(expand('~/.vim/plugged'))
 "*****************************************************************************
 "" Plug install packages
 "*****************************************************************************
-Plug 'scrooloose/nerdtree'
+Plug 'Raimondi/delimitMate'
+Plug 'Yggdroot/indentLine'
+Plug 'airblade/vim-gitgutter'
+Plug 'avelino/vim-bootstrap-updater'
+Plug 'bronson/vim-trailing-whitespace'
+Plug 'flazz/vim-colorschemes'
+Plug 'fortes/vim-escuro'
 Plug 'jistr/vim-nerdtree-tabs'
+Plug 'luochen1990/rainbow'
+Plug 'majutsushi/tagbar'
+Plug 'scrooloose/nerdcommenter'
+Plug 'scrooloose/nerdtree'
+Plug 'sheerun/vim-polyglot'
 Plug 'tpope/vim-commentary'
 Plug 'tpope/vim-fugitive'
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
-Plug 'airblade/vim-gitgutter'
-Plug 'vim-scripts/grep.vim'
 Plug 'vim-scripts/CSApprox'
-Plug 'bronson/vim-trailing-whitespace'
-Plug 'Raimondi/delimitMate'
-Plug 'majutsushi/tagbar'
-Plug 'scrooloose/syntastic'
-Plug 'Yggdroot/indentLine'
-Plug 'avelino/vim-bootstrap-updater'
-Plug 'sheerun/vim-polyglot'
-Plug 'scrooloose/nerdcommenter'
-Plug 'flazz/vim-colorschemes'
-Plug 'luochen1990/rainbow'
+Plug 'vim-scripts/grep.vim'
+Plug 'w0rp/ale'
+Plug 'davidhalter/jedi-vim'
+
 if isdirectory('/usr/local/opt/fzf')
   Plug '/usr/local/opt/fzf' | Plug 'junegunn/fzf.vim'
 else
@@ -613,9 +616,6 @@ let g:jedi#show_call_signatures = "0"
 let g:jedi#completions_command = "<C-Space>"
 let g:jedi#smart_auto_mappings = 0
 
-" syntastic
-let g:syntastic_python_checkers=['python', 'flake8']
-
 " vim-airline
 let g:airline#extensions#virtualenv#enabled = 1
 
@@ -674,6 +674,10 @@ else
 endif
 
 map <SPACE> <leader>
+let g:airline#extensions#tabline#enabled = 1
+let g:ale_linter_aliases = {'yaml': ['css', 'javascript']}
+let g:ale_linters = {'jsx': ['stylelint', 'eslint']}
 
 " Terminal Background. 
-hi Normal ctermbg=none
+hi Normal ctermbg=NONE
+hi Nontext ctermbg=NONE

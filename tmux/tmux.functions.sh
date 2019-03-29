@@ -38,7 +38,7 @@
    unset _old _tmux_command_options opt
 }
 _toggle_mouse() {
-   _old_new_status -g "mouse-resize-pane"
+   _old_new_status -g "mouse"
 
    tmux set -qg mode-mouse $onsv \;\
        set -qg mouse-resize-pane $onsv\;\
