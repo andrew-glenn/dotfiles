@@ -40,10 +40,7 @@
 _toggle_mouse() {
    _old_new_status -g "mouse"
 
-   tmux set -qg mode-mouse $onsv \;\
-       set -qg mouse-resize-pane $onsv\;\
-       set -qg mouse-select-pane $onsv\;\
-       set -qg mouse-select-window $onsv\;\
+   tmux set -qg mouse $onsv \;\
        display "Mouse Mode: [$onsv]"
 }
 
