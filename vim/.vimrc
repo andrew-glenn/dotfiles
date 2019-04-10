@@ -31,19 +31,19 @@ call plug#begin(expand('~/.vim/plugged'))
 "*****************************************************************************
 "" Plug install packages
 "*****************************************************************************
-Plug 'Raimondi/delimitMate'
-Plug 'Yggdroot/indentLine'
-Plug 'airblade/vim-gitgutter'
+"Plug 'Raimondi/delimitMate'
+"Plug 'Yggdroot/indentLine'
+"Plug 'airblade/vim-gitgutter'
 Plug 'avelino/vim-bootstrap-updater'
-Plug 'bronson/vim-trailing-whitespace'
+"Plug 'bronson/vim-trailing-whitespace'
 Plug 'flazz/vim-colorschemes'
-Plug 'fortes/vim-escuro'
+"Plug 'fortes/vim-escuro'
 Plug 'jistr/vim-nerdtree-tabs'
 Plug 'luochen1990/rainbow'
 Plug 'majutsushi/tagbar'
 Plug 'scrooloose/nerdcommenter'
 Plug 'scrooloose/nerdtree'
-Plug 'sheerun/vim-polyglot'
+"Plug 'sheerun/vim-polyglot'
 Plug 'tpope/vim-commentary'
 Plug 'tpope/vim-fugitive'
 Plug 'vim-airline/vim-airline'
@@ -52,6 +52,10 @@ Plug 'vim-scripts/CSApprox'
 Plug 'vim-scripts/grep.vim'
 Plug 'w0rp/ale'
 Plug 'davidhalter/jedi-vim'
+
+"-- Cloudformation"
+Plug 'scrooloose/syntastic'
+Plug 'speshak/vim-cfn'
 
 if isdirectory('/usr/local/opt/fzf')
   Plug '/usr/local/opt/fzf' | Plug 'junegunn/fzf.vim'
@@ -63,7 +67,7 @@ let g:make = 'gmake'
 if exists('make')
         let g:make = 'make'
 endif
-Plug 'Shougo/vimproc.vim', {'do': g:make}
+"Plug 'Shougo/vimproc.vim', {'do': g:make}
 
 "" Vim-Session
 Plug 'xolox/vim-misc'
@@ -95,7 +99,7 @@ Plug 'phanviet/vim-monokai-pro'
 
 " javascript
 "" Javascript Bundle
-Plug 'jelera/vim-javascript-syntax'
+"Plug 'jelera/vim-javascript-syntax'
 
 
 " python
@@ -183,6 +187,7 @@ if !exists('g:not_finish_vimplug')
   colorscheme anderson
 endif
 
+colorscheme wombat256i
 set ruler
 set mouse=a
 set mousemodel=popup
@@ -425,6 +430,9 @@ let g:syntastic_style_error_symbol = '✗'
 let g:syntastic_style_warning_symbol = '⚠'
 let g:syntastic_auto_loc_list=1
 let g:syntastic_aggregate_errors = 1
+let g:syntastic_check_on_open=1
+let g:syntastic_check_on_wq=0
+let g:syntastic_cloudformation_checkers = ['cfn_lint']
 
 " Rainbow active. 
 let g:rainbow_active = 1
@@ -675,8 +683,14 @@ endif
 
 map <SPACE> <leader>
 let g:airline#extensions#tabline#enabled = 1
-let g:ale_linter_aliases = {'yaml': ['css', 'javascript']}
-let g:ale_linters = {'jsx': ['stylelint', 'eslint']}
+"let g:ale_linter_aliases = {'yaml': ['css', 'javascript']}
+"let g:ale_linters = {'jsx': ['stylelint', 'eslint']}
+
+"cfn-lint
+set statusline+=%#warningmsg#
+set statusline+=%{SyntasticStatuslineFlag()}
+set statusline+=%*
+
 
 " Terminal Background. 
 hi Normal ctermbg=NONE
