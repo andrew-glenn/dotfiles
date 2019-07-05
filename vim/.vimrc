@@ -52,6 +52,8 @@ Plug 'vim-scripts/CSApprox'
 Plug 'vim-scripts/grep.vim'
 Plug 'w0rp/ale'
 Plug 'davidhalter/jedi-vim'
+Plug 'digitalrounin/vim-yaml-folds'       " YAML Folding
+Plug 'tmhedberg/SimpylFold'               " Python Folding
 
 "-- Cloudformation"
 Plug 'scrooloose/syntastic'
@@ -695,3 +697,12 @@ set statusline+=%*
 " Terminal Background. 
 hi Normal ctermbg=NONE
 hi Nontext ctermbg=NONE
+
+autocmd FileType yaml setlocal ts=2 sts=-1 sw=2 expandtab indentkeys-=0# indentkeys-=<:>
+au! BufNewFile,BufReadPost *.{yaml} set filetype=yaml.cloudformation  foldmethod=manual
+" Folding settings.
+nnoremap <silent> <Space> @=(foldlevel('.')?'za':"\<Space>")<CR>
+vnoremap <Space> zf
+
+
+let g:syntastic_python_checkers = ['python3']
