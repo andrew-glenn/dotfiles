@@ -1,6 +1,7 @@
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
+export PATH=$HOME/.toolbox/bin:$PATH
 # Path to your oh-my-zsh installation.
 export ZSH=$HOME/.oh-my-zsh
 
@@ -54,7 +55,7 @@ ZSH_THEME="powerlevel9k/powerlevel9k"
 plugins=(virtualenv)
 
 source $ZSH/oh-my-zsh.sh
-export PATH=/usr/local/opt/python/libexec/bin:$PATH:/usr/local/bin:~/Library/Python/3.7/bin
+export PATH=$PATH:/usr/local/bin:~/Library/Python/3.7/bin:~/bin
 # User configuration
 
 # export MANPATH="/usr/local/man:$MANPATH"
