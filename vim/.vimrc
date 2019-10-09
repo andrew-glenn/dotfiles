@@ -727,5 +727,11 @@ cmap <ESC>[H <Home>
 cmap <ESC>[F <End>
 
 autocmd BufNewFile,BufRead *.ino let g:airline_section_x='%{MyStatusLine()}'
-autocmd FileType yaml setlocal ts=2 sts=2 sw=2 expandtab
-au BufWritePost *.go !gofmt -w %
+autocmd FileType yaml setlocal ts=2 sts=-1 sw=2 expandtab indentkeys-=0# indentkeys-=<:>
+au! BufNewFile,BufReadPost *.{yaml} set filetype=yaml.cloudformation  foldmethod=manual
+" Folding settings.
+nnoremap <silent> <Space> @=(foldlevel('.')?'za':"\<Space>")<CR>
+vnoremap <Space> zf
+
+
+let g:syntastic_python_checkers = ['python3']
