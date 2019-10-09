@@ -51,10 +51,10 @@ ZSH_THEME="powerlevel9k/powerlevel9k"
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git virtualenv)
+plugins=(virtualenv)
 
 source $ZSH/oh-my-zsh.sh
-export PATH=$PATH:/usr/local/bin:~/Library/Python/3.7/bin
+export PATH=/usr/local/opt/python/libexec/bin:$PATH:/usr/local/bin:~/Library/Python/3.7/bin
 # User configuration
 
 # export MANPATH="/usr/local/man:$MANPATH"
@@ -99,7 +99,7 @@ alias ssh="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 alias mid="sudo plutil -convert xml1 /Library/Managed\ Preferences/andglenn/com.google.Chrome.plist && sudo sed -i -e "\"'4r /Users/andglenn/Documents/chrome.txt'\"" /Library/Managed\ Preferences/andglenn/com.google.Chrome.plist"
 alias hardmid="sudo plutil -convert xml1 /Library/Managed\ Preferences/andglenn/com.google.Chrome.plist && sudo sed -i -e "\"'4r /Users/andglenn/Documents/chromeHard.txt'\"" /Library/Managed\ Preferences/andglenn/com.google.Chrome.plist"
 alias mcurl="curl $@ -L --cookie ~/.midway/cookie --cookie-jar ~/.midway/cookie"
-alias pip='pip3'
+#alias pip='pip3'
 alias python='python3'
 source /usr/local/bin/virtualenvwrapper.sh
 source $ZSH/oh-my-zsh.sh
