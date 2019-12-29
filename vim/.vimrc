@@ -78,14 +78,6 @@ endif
 Plug 'xolox/vim-misc'
 Plug 'xolox/vim-session'
 
-if v:version >= 703
-  Plug 'Shougo/vimshell.vim'
-endif
-
-if v:version >= 704
-  "" Snippets
-  Plug 'SirVer/ultisnips'
-endif
 
 Plug 'honza/vim-snippets'
 
@@ -99,7 +91,7 @@ Plug 'phanviet/vim-monokai-pro'
 
 " go
 "" Go Lang Bundle
-"Plug 'fatih/vim-go', {'do': ':GoInstallBinaries'}
+Plug 'fatih/vim-go', {'do': ':GoInstallBinaries'}
 
 
 " javascript
