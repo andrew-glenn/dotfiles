@@ -28,36 +28,106 @@ endif
 " Required:
 call plug#begin(expand('~/.vim/plugged'))
 
+function! CreateCenteredFloatingWindow()
+    let width = float2nr(&columns * 0.6)
+    let height = float2nr(&lines * 0.6)
+    let top = ((&lines - height) / 2) - 1
+    let left = (&columns - width) / 2
+    let opts = {'relative': 'editor', 'row': top, 'col': left, 'width': width, 'height': height, 'style': 'minimal'}
+
+    let top = "╭" . repeat("─", width - 2) . "╮"
+    let mid = "│" . repeat(" ", width - 2) . "│"
+    let bot = "╰" . repeat("─", width - 2) . "╯"
+    let lines = [top] + repeat([mid], height - 2) + [bot]
+    let s:buf = nvim_create_buf(v:false, v:true)
+    call nvim_buf_set_lines(s:buf, 0, -1, v:true, lines)
+    call nvim_open_win(s:buf, v:true, opts)
+    set winhl=Normal:Floating
+    let opts.row += 1
+    let opts.height -= 2
+    let opts.col += 2
+    let opts.width -= 4
+    call nvim_open_win(nvim_create_buf(v:false, v:true), v:true, opts)
+    autocmd BufWipeout <buffer> exe 'bwipeout '.s:buf
+endfunction
+
+" When term starts, auto go into insert mode
+autocmd TermOpen * startinsert
+
+" Turn off line numbers etc
+autocmd TermOpen * setlocal listchars= nonumber norelativenumber
+
+function! ToggleTerm(cmd)
+    if empty(bufname(a:cmd))
+        call CreateCenteredFloatingWindow()
+        call termopen(a:cmd, { 'on_exit': function('OnTermExit') })
+    else
+        bwipeout!
+    endif
+endfunction
+
+" Open Project
+function! ToggleProject()
+    call ToggleTerm('tmuxinator-fzf-start.sh')
+endfunction
+
+function! ToggleScratchTerm()
+    call ToggleTerm('bash')
+endfunction
+
+function! ToggleLazyGit()
+    call ToggleTerm('lazygit')
+endfunction
+
+function! ToggleLazyDocker()
+    call ToggleTerm('lazydocker')
+endfunction
+
+
+function! OnTermExit(job_id, code, event) dict
+    if a:code == 0
+        bwipeout!
+    endif
+endfunction
 "*****************************************************************************
 "" Plug install packages
 "*****************************************************************************
 "Plug 'Raimondi/delimitMate'
 "Plug 'Yggdroot/indentLine'
-"Plug 'airblade/vim-gitgutter'
-Plug 'avelino/vim-bootstrap-updater'
 "Plug 'bronson/vim-trailing-whitespace'
-Plug 'flazz/vim-colorschemes'
 "Plug 'fortes/vim-escuro'
+"Plug 'sheerun/vim-polyglot'
+Plug 'airblade/vim-gitgutter'
+Plug 'avelino/vim-bootstrap-updater'
+Plug 'ayu-theme/ayu-vim' " or other package manager
+" Plug 'davidhalter/jedi-vim'
+Plug 'digitalrounin/vim-yaml-folds'       " YAML Folding
+Plug 'flazz/vim-colorschemes'
+Plug 'honza/vim-snippets'
 Plug 'jistr/vim-nerdtree-tabs'
 Plug 'luochen1990/rainbow'
 Plug 'majutsushi/tagbar'
 Plug 'scrooloose/nerdcommenter'
 Plug 'scrooloose/nerdtree'
-"Plug 'sheerun/vim-polyglot'
+Plug 'scrooloose/syntastic'
+Plug 'speshak/vim-cfn'
+Plug 'szw/vim-maximizer'
+Plug 'tmhedberg/SimpylFold'               " Python Folding
 Plug 'tpope/vim-commentary'
+Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-fugitive'
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 Plug 'vim-scripts/CSApprox'
 Plug 'vim-scripts/grep.vim'
 Plug 'w0rp/ale'
-Plug 'davidhalter/jedi-vim'
-Plug 'digitalrounin/vim-yaml-folds'       " YAML Folding
-Plug 'tmhedberg/SimpylFold'               " Python Folding
+Plug 'xolox/vim-misc'
+Plug 'xolox/vim-session'
+Plug 'tomasr/molokai'
+Plug 'phanviet/vim-monokai-pro'
+Plug 'raimon49/requirements.txt.vim', {'for': 'requirements'} "Python
 
-"-- Cloudformation"
-Plug 'scrooloose/syntastic'
-Plug 'speshak/vim-cfn'
+
 
 if isdirectory('/usr/local/opt/fzf')
   Plug '/usr/local/opt/fzf' | Plug 'junegunn/fzf.vim'
@@ -65,15 +135,11 @@ else
   Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --bin' }
   Plug 'junegunn/fzf.vim'
 endif
+
 let g:make = 'gmake'
 if exists('make')
         let g:make = 'make'
 endif
-"Plug 'Shougo/vimproc.vim', {'do': g:make}
-
-"" Vim-Session
-Plug 'xolox/vim-misc'
-Plug 'xolox/vim-session'
 
 if v:version >= 703
   Plug 'Shougo/vimshell.vim'
@@ -84,39 +150,6 @@ if v:version >= 704
   Plug 'SirVer/ultisnips'
 endif
 
-Plug 'honza/vim-snippets'
-
-"" Color
-Plug 'tomasr/molokai'
-Plug 'phanviet/vim-monokai-pro'
-
-"*****************************************************************************
-"" Custom bundles
-"*****************************************************************************
-
-" go
-"" Go Lang Bundle
-"Plug 'fatih/vim-go', {'do': ':GoInstallBinaries'}
-
-
-" javascript
-"" Javascript Bundle
-"Plug 'jelera/vim-javascript-syntax'
-
-
-" python
-"" Python Bundle
-Plug 'davidhalter/jedi-vim'
-Plug 'raimon49/requirements.txt.vim', {'for': 'requirements'}
-
-
-"*****************************************************************************
-"*****************************************************************************
-
-"" Include user's extra bundle
-if filereadable(expand("~/.vimrc.local.bundles"))
-  source ~/.vimrc.local.bundles
-endif
 
 call plug#end()
 
@@ -189,8 +222,7 @@ if !exists('g:not_finish_vimplug')
   colorscheme anderson
 endif
 
-colorscheme wombat256i
-set ruler
+"colorscheme wombat256i
 set mouse=a
 set mousemodel=popup
 set t_Co=256
@@ -289,23 +321,6 @@ set wildignore+=*/tmp/*,*.so,*.swp,*.zip,*.pyc,*.db,*.sqlite
 nnoremap <silent> <F2> :NERDTreeFind<CR>
 nnoremap <silent> <F3> :NERDTreeToggle<CR>
 
-" grep.vim
-nnoremap <silent> <leader>f :Rgrep<CR>
-let Grep_Default_Options = '-IR'
-let Grep_Skip_Files = '*.log *.db'
-let Grep_Skip_Dirs = '.git node_modules'
-
-" vimshell.vim
-let g:vimshell_user_prompt = 'fnamemodify(getcwd(), ":~")'
-let g:vimshell_prompt =  '$ '
-
-" terminal emulation
-if g:vim_bootstrap_editor == 'nvim'
-  nnoremap <silent> <leader>sh :terminal<CR>
-else
-  nnoremap <silent> <leader>sh :VimShellCreate<CR>
-endif
-
 "*****************************************************************************
 "" Functions
 "*****************************************************************************
@@ -377,15 +392,66 @@ nnoremap <S-Tab> gT
 nnoremap <silent> <S-t> :tabnew<CR>
 
 map s :write
-nnoremap <C-J> <C-W><C-J>
-nnoremap <C-K> <C-W><C-K>
-nnoremap <C-L> <C-W><C-L>
-nnoremap <C-H> <C-W><C-H>
+"up
+nnoremap <C-i> <C-W><C-K> 
+"down
+nnoremap <C-k> <C-W><C-J>
+"left
+nnoremap <C-j> <C-W><C-H>
+"right
+nnoremap <C-l> <C-W><C-L>
+
 nnoremap <C-t> :tabnew<CR>
 nnoremap <C-y> :tabclose<CR>
 nnoremap <C-s> <C-W><C-S>
 nnoremap <C-d> <C-w><C-q>
 nnoremap <C-R> :source ~/.vimrc<CR>
+map <C-a> GVgg
+map <C-a> GVgg
+map <C-n> :enew
+map <C-o> :e . <Enter>
+map <C-s> :w <Enter>
+map <C-c> y
+map <C-v> p
+map <C-x> d
+map <C-z> u
+map <C-t> :tabnew <Enter>
+map <C-i> >>
+map <C-w> :close <Enter>
+map <C-W> :q! <Enter>
+map <C-f> /
+" Git keybinds
+" Git status
+nnoremap  <Leader>gs  :Gstatus<cr>
+" Git diff in split window
+nnoremap  <Leader>gd  :Gdiffsplit<cr>
+" Git commit
+nnoremap  <Leader>gc  :Gcommit<cr>
+" Git push 
+nnoremap  <Leader>gP  :Gpush<cr>
+" Git pull 
+nnoremap  <Leader>gp  :Gpull<cr>
+" Git move 
+nnoremap  <Leader>gm  :Gmove<cr>
+" Git merge 
+nnoremap  <Leader>gM  :Gmerge<cr>
+" browse current file on web
+nnoremap  <Leader>gb  :Gbrowse<cr>
+" browse current line on web
+nnoremap  <Leader>gbl  :CocCommand git.browserOpen<cr>
+" View chunk information in preview window. 
+nnoremap  <Leader>gh  :CocCommand git.chunkInfo<cr>
+" View commit information in preview window. 
+nnoremap  <Leader>gsc  :CocCommand git.showCommit<cr>
+" Toggle git gutter sign columns
+nnoremap  <Leader>gg  :CocCommand git.toggleGutters<cr>
+" Lazygit
+nnoremap <silent> <Leader>lg :call ToggleLazyGit()<CR>
+
+let g:maximizer_set_default_mapping = 0
+nnoremap <silent><F5> :MaximizerToggle<CR>
+vnoremap <silent><F5> :MaximizerToggle<CR>
+inoremap <silent><F5> <C-o>:MaximizerToggle<CR>
 
 "" Set working directory
 nnoremap <leader>. :lcd %:p:h<CR>
@@ -436,26 +502,26 @@ let g:syntastic_check_on_open=1
 let g:syntastic_check_on_wq=0
 let g:syntastic_cloudformation_checkers = ['cfn_lint']
 
-" Rainbow active. 
-let g:rainbow_active = 1
+"" Rainbow active. 
+"let g:rainbow_active = 1
 
 " vimshell
-nmap <silent> <F12> :VimShell<CR>
-nmap <silent> <C-F12> :VimShellTab<CR>
+"nmap <silent> <F12> :VimShell<CR>
+"nmap <silent> <C-F12> :VimShellTab<CR>
 
 " Tagbar
 nmap <silent> <F4> :TagbarToggle<CR>
 
 " window
-nmap <leader>sw<left>  :topleft  vnew<CR>
-nmap <leader>sw<right> :botright vnew<CR>
-nmap <leader>sw<up>    :topleft  new<CR>
-nmap <leader>sw<down>  :botright new<CR>
+nmap <leader>w<left>  :topleft  vnew<CR>
+nmap <leader>w<right> :botright vnew<CR>
+nmap <leader>w<up>    :topleft  new<CR>
+nmap <leader>w<down>  :botright new<CR>
 " buffer
-nmap <leader>s<left>   :leftabove  vnew<CR>
-nmap <leader>s<right>  :rightbelow vnew<CR>
-nmap <leader>s<up>     :leftabove  new<CR>
-nmap <leader>s<down>   :rightbelow new<CR>
+nmap <leader>b<left>   :leftabove  vnew<CR>
+nmap <leader>b<right>  :rightbelow vnew<CR>
+nmap <leader>b<up>     :leftabove  new<CR>
+nmap <leader>b<down>   :rightbelow new<CR>
 
 
 nmap <C-=> <leader>c<Space>
@@ -494,12 +560,6 @@ noremap <leader>c :bd<CR>
 "" Clean search (highlight)
 nnoremap <silent> <leader><space> :noh<cr>
 
-"" Switching windows
-noremap <C-j> <C-w>j
-noremap <C-u> <C-w>k
-noremap <C-k> <C-w>l
-noremap <C-h> <C-w>h
-
 "" Vmap for maintain Visual Mode after shifting > and <
 vmap < <gv
 vmap > >gv
@@ -510,21 +570,6 @@ vnoremap K :m '<-2<CR>gv=gv
 
 "" Open current line on GitHub
 nnoremap <Leader>o :.Gbrowse<CR>
-
-map <C-a> GVgg
-map <C-a> GVgg
-map <C-n> :enew
-map <C-o> :e . <Enter>
-map <C-s> :w <Enter>
-map <C-c> y
-map <C-v> p
-map <C-x> d
-map <C-z> u
-map <C-t> :tabnew <Enter>
-map <C-i> >>
-map <C-w> :close <Enter>
-map <C-W> :q! <Enter>
-map <C-f> /
 
 "*****************************************************************************
 "" Custom configs
@@ -616,15 +661,15 @@ augroup vimrc-python
 augroup END
 
 " jedi-vim
-let g:jedi#popup_on_dot = 0
-let g:jedi#goto_assignments_command = "<leader>g"
-let g:jedi#goto_definitions_command = "<leader>d"
-let g:jedi#documentation_command = "K"
-let g:jedi#usages_command = "<leader>n"
-let g:jedi#rename_command = "<leader>r"
-let g:jedi#show_call_signatures = "0"
-let g:jedi#completions_command = "<C-Space>"
-let g:jedi#smart_auto_mappings = 0
+"let g:jedi#popup_on_dot = 0
+"let g:jedi#goto_assignments_command = "<leader>g"
+"let g:jedi#goto_definitions_command = "<leader>d"
+"let g:jedi#documentation_command = "K"
+"let g:jedi#usages_command = "<leader>n"
+"let g:jedi#rename_command = "<leader>r"
+"let g:jedi#show_call_signatures = "0"
+"let g:jedi#completions_command = "<C-Space>"
+"let g:jedi#smart_auto_mappings = 0
 
 " vim-airline
 let g:airline#extensions#virtualenv#enabled = 1
@@ -704,5 +749,8 @@ au! BufNewFile,BufReadPost *.{yaml} set filetype=yaml.cloudformation  foldmethod
 nnoremap <silent> <Space> @=(foldlevel('.')?'za':"\<Space>")<CR>
 vnoremap <Space> zf
 
-
 let g:syntastic_python_checkers = ['python3']
+
+set termguicolors     " enable true colors support
+let ayucolor="dark"   " for dark version of theme
+colorscheme ayu
