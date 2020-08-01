@@ -33,7 +33,7 @@ call plug#begin(expand('~/.vim/plugged'))
 "*****************************************************************************
 "Plug 'Raimondi/delimitMate'
 "Plug 'Yggdroot/indentLine'
-"Plug 'airblade/vim-gitgutter'
+Plug 'airblade/vim-gitgutter'
 Plug 'avelino/vim-bootstrap-updater'
 "Plug 'bronson/vim-trailing-whitespace'
 Plug 'flazz/vim-colorschemes'
@@ -51,16 +51,18 @@ Plug 'vim-airline/vim-airline-themes'
 Plug 'vim-scripts/CSApprox'
 Plug 'vim-scripts/grep.vim'
 Plug 'w0rp/ale'
-Plug 'davidhalter/jedi-vim'
+"Plug 'davidhalter/jedi-vim'
 Plug 'stevearc/vim-arduino'
+Plug 'morhetz/gruvbox'
 "PPlug 'SirVer/ultisnips'
 "Plug 'sudar/vim-arduino-syntax'
 "Plug 'sudar/vim-arduino-snippets'
 "Plug 'https://github.com/Siprah/vim-todoist'
-
+Plug 'jiangmiao/auto-pairs'
 "-- Cloudformation"
 Plug 'scrooloose/syntastic'
 Plug 'speshak/vim-cfn'
+Plug 'jaredgorski/spacecamp'
 
 if isdirectory('/usr/local/opt/fzf')
   Plug '/usr/local/opt/fzf' | Plug 'junegunn/fzf.vim'
@@ -101,9 +103,8 @@ Plug 'fatih/vim-go', {'do': ':GoInstallBinaries'}
 
 " python
 "" Python Bundle
-Plug 'davidhalter/jedi-vim'
 Plug 'raimon49/requirements.txt.vim', {'for': 'requirements'}
-
+Plug 'jceb/vim-orgmode'
 
 "*****************************************************************************
 "*****************************************************************************
@@ -184,7 +185,7 @@ if !exists('g:not_finish_vimplug')
   colorscheme anderson
 endif
 
-colorscheme ir_black
+colorscheme monokai
 set ruler
 set mouse=a
 set mousemodel=popup
@@ -611,8 +612,8 @@ augroup vimrc-python
 augroup END
 
 " jedi-vim
-let g:jedi#popup_on_dot = 0
-let g:jedi#goto_assignments_command = "<leader>g"
+let g:jedi#popup_on_dot = 1
+let g:zjedi#goto_assignments_command = "<leader>g"
 let g:jedi#goto_definitions_command = "<leader>d"
 let g:jedi#documentation_command = "K"
 let g:jedi#usages_command = "<leader>n"
@@ -727,3 +728,5 @@ vnoremap <Space> zf
 
 
 let g:syntastic_python_checkers = ['python3']
+
+hi DiffAdd gui=NONE guifg=green guibg=black
