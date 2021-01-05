@@ -1,5 +1,13 @@
  set -e
 
+ _host_specific_theme(){
+  hostname=`hostname`
+  if [[ `hostname` =~ dev-dsk ]]; then
+    tmux source-file "${HOME}/.tmux-themepack/powerline/block/orange.tmuxtheme"
+  else
+    tmux source-file "${HOME}/.tmux-themepack/powerline/block/cyan.tmuxtheme"
+  fi
+}
  _old_new_status(){
      set -x
      while getopts 'x:X:w:g:' opt "$@"; do
