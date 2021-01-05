@@ -71,7 +71,7 @@ tell application "System Events"
 	tell application process "Amazon Chime"
 		try
 			set frontmost to true
-			perform action "AXRaise" of (first window whose name contains "Meeting")
+			perform action "AXRaise" of (first window whose name contains "Meeting" or "Bridge")
 		end try
 	end tell
 	key down {{command}}

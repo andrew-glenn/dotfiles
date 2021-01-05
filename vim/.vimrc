@@ -52,10 +52,10 @@ function! CreateCenteredFloatingWindow()
 endfunction
 
 " When term starts, auto go into insert mode
-autocmd TermOpen * startinsert
+"autocmd TermOpen * startinsert
 
 " Turn off line numbers etc
-autocmd TermOpen * setlocal listchars= nonumber norelativenumber
+"autocmd TermOpen * setlocal listchars= nonumber norelativenumber
 
 function! ToggleTerm(cmd)
     if empty(bufname(a:cmd))
@@ -79,11 +79,6 @@ function! ToggleLazyGit()
     call ToggleTerm('lazygit')
 endfunction
 
-function! ToggleLazyDocker()
-    call ToggleTerm('lazydocker')
-endfunction
-
-
 function! OnTermExit(job_id, code, event) dict
     if a:code == 0
         bwipeout!
@@ -97,10 +92,10 @@ endfunction
 "Plug 'bronson/vim-trailing-whitespace'
 "Plug 'fortes/vim-escuro'
 "Plug 'sheerun/vim-polyglot'
+" Plug 'davidhalter/jedi-vim'
 Plug 'airblade/vim-gitgutter'
 Plug 'avelino/vim-bootstrap-updater'
 Plug 'ayu-theme/ayu-vim' " or other package manager
-" Plug 'davidhalter/jedi-vim'
 Plug 'digitalrounin/vim-yaml-folds'       " YAML Folding
 Plug 'flazz/vim-colorschemes'
 Plug 'honza/vim-snippets'
@@ -126,8 +121,11 @@ Plug 'xolox/vim-session'
 Plug 'tomasr/molokai'
 Plug 'phanviet/vim-monokai-pro'
 Plug 'raimon49/requirements.txt.vim', {'for': 'requirements'} "Python
-
-
+Plug 'rafi/awesome-vim-colorschemes'
+Plug 'sainnhe/gruvbox-material'
+Plug 'junegunn/goyo.vim'
+Plug 'bignimbus/you-are-here.vim'
+Plug 'ervandew/supertab'
 
 if isdirectory('/usr/local/opt/fzf')
   Plug '/usr/local/opt/fzf' | Plug 'junegunn/fzf.vim'
@@ -138,16 +136,11 @@ endif
 
 let g:make = 'gmake'
 if exists('make')
-        let g:make = 'make'
+   let g:make = 'make'
 endif
 
 if v:version >= 703
   Plug 'Shougo/vimshell.vim'
-endif
-
-if v:version >= 704
-  "" Snippets
-  Plug 'SirVer/ultisnips'
 endif
 
 
@@ -175,9 +168,9 @@ vnoremap <Space> zf
 set backspace=indent,eol,start
 
 "" Tabs. May be overriten by autocmd rules
-set tabstop=4
-set softtabstop=0
-set shiftwidth=4
+set tabstop=2
+set softtabstop=2
+set shiftwidth=2
 set expandtab
 
 "" Map leader to ,
@@ -370,21 +363,12 @@ set autoread
 noremap <Leader>h :<C-u>split<CR>
 noremap <Leader>v :<C-u>vsplit<CR>
 
-"" Git
-noremap <Leader>ga :Gwrite<CR>
-noremap <Leader>gc :Gcommit<CR>
-noremap <Leader>gsh :Gpush<CR>
-noremap <Leader>gll :Gpull<CR>
-noremap <Leader>gs :Gstatus<CR>
-noremap <Leader>gb :Gblame<CR>
-noremap <Leader>gd :Gvdiff<CR>
-noremap <Leader>gr :Gremove<CR>
 
 " session management
-nnoremap <leader>so :OpenSession<Space>
-nnoremap <leader>ss :SaveSession<Space>
-nnoremap <leader>sd :DeleteSession<CR>
-nnoremap <leader>sc :CloseSession<CR>
+"nnoremap <leader>so :OpenSession<Space>
+"nnoremap <leader>ss :SaveSession<Space>
+"nnoremap <leader>sd :DeleteSession<CR>
+"nnoremap <leader>sc :CloseSession<CR>
 
 "" Tabs
 nnoremap <Tab> gt
@@ -415,38 +399,28 @@ map <C-c> y
 map <C-v> p
 map <C-x> d
 map <C-z> u
-map <C-t> :tabnew <Enter>
 map <C-i> >>
-map <C-w> :close <Enter>
-map <C-W> :q! <Enter>
+map <leader>w :close <Enter>
+map <leader>W :q! <Enter>
 map <C-f> /
-" Git keybinds
-" Git status
-nnoremap  <Leader>gs  :Gstatus<cr>
-" Git diff in split window
-nnoremap  <Leader>gd  :Gdiffsplit<cr>
-" Git commit
-nnoremap  <Leader>gc  :Gcommit<cr>
-" Git push 
-nnoremap  <Leader>gP  :Gpush<cr>
-" Git pull 
-nnoremap  <Leader>gp  :Gpull<cr>
-" Git move 
-nnoremap  <Leader>gm  :Gmove<cr>
-" Git merge 
-nnoremap  <Leader>gM  :Gmerge<cr>
-" browse current file on web
-nnoremap  <Leader>gb  :Gbrowse<cr>
-" browse current line on web
-nnoremap  <Leader>gbl  :CocCommand git.browserOpen<cr>
-" View chunk information in preview window. 
-nnoremap  <Leader>gh  :CocCommand git.chunkInfo<cr>
-" View commit information in preview window. 
-nnoremap  <Leader>gsc  :CocCommand git.showCommit<cr>
-" Toggle git gutter sign columns
-nnoremap  <Leader>gg  :CocCommand git.toggleGutters<cr>
-" Lazygit
-nnoremap <silent> <Leader>lg :call ToggleLazyGit()<CR>
+map <silent><F10> zM zr<cr>
+set foldnestmax=1
+nnoremap <silent> <leader>\ :call you_are_here#Toggle()<CR>
+
+""Auto set paste mode
+"
+"let &t_SI .= "\<Esc>[?2004h"
+"let &t_EI .= "\<Esc>[?2004l"
+"
+"inoremap <special> <expr> <Esc>[200~ XTermPasteBegin()
+"
+"function! XTermPasteBegin()
+"  set pastetoggle=<Esc>[201~
+"  set paste
+"  return ""
+"endfunction
+
+
 
 let g:maximizer_set_default_mapping = 0
 nnoremap <silent><F5> :MaximizerToggle<CR>
@@ -743,8 +717,16 @@ set statusline+=%*
 hi Normal ctermbg=NONE
 hi Nontext ctermbg=NONE
 
-autocmd FileType yaml setlocal ts=2 sts=-1 sw=2 expandtab indentkeys-=0# indentkeys-=<:>
-au! BufNewFile,BufReadPost *.{yaml} set filetype=yaml.cloudformation  foldmethod=manual
+"#autocmd FileType yaml setlocal ts=2 sts=-1 sw=2 expandtab indentkeys-=0# indentkeys-=<:>
+au! BufNewFile,BufReadPost *.template.{yaml} set filetype=yaml.cloudformation foldmethod=manual
+au! BufNewFile,BufReadPost *.template.json set filetype=json.cloudformation foldmethod=manual
+
+
+"autocmd FileType yaml.cloudformaton setlocal foldmethod=expr
+"autocmd FileType json.cloudformaton setlocal foldmethod=expr
+"autocmd FileTYpe yaml.cloudformation setlocal foldexpr=CloudFormationFoldings()
+"autocmd FileTYpe json.cloudformation setlocal foldexpr=CloudFormationFoldings()
+
 " Folding settings.
 nnoremap <silent> <Space> @=(foldlevel('.')?'za':"\<Space>")<CR>
 vnoremap <Space> zf
@@ -753,4 +735,126 @@ let g:syntastic_python_checkers = ['python3']
 
 set termguicolors     " enable true colors support
 let ayucolor="dark"   " for dark version of theme
-colorscheme ayu
+colorscheme molokai
+
+"=====================================================
+"" Terraform Settings
+"=====================================================
+augroup terraform
+    au!
+    au BufNewFile,BufRead *.tf setlocal ft=terraform
+    au BufNewFile,BufRead *.hcl setlocal ft=terraform
+    au BufEnter *.tf colorscheme wombat256mod
+augroup END
+
+"=====================================================
+"" Markdown Settings
+"=====================================================
+augroup markdown
+    au!
+    au BufNewFile,BufRead *.md setlocal ft=markdown
+    au BufEnter *.md colorscheme summerfruit256
+augroup END
+
+"=====================================================
+"" Asciidoctor Settings
+"
+"=====================================================
+fun! AsciidoctorMappings()
+    nnoremap <buffer> <leader>oo :AsciidoctorOpenRAW<CR>
+    nnoremap <buffer> <leader>op :AsciidoctorOpenPDF<CR>
+    nnoremap <buffer> <leader>oh :AsciidoctorOpenHTML<CR>
+    nnoremap <buffer> <leader>ox :AsciidoctorOpenDOCX<CR>
+    nnoremap <buffer> <leader>ch :Asciidoctor2HTML<CR>
+    nnoremap <buffer> <leader>cp :Asciidoctor2PDF<CR>
+    nnoremap <buffer> <leader>cx :Asciidoctor2DOCX<CR>
+    nnoremap <buffer> <leader>p :AsciidoctorPasteImage<CR>
+    " :make will build pdfs
+    "    compiler asciidoctor2pdf
+endfun
+
+function CloudFormationFoldings()
+  let thisline = getline(v:lnum)
+  if thisline =~ '^\s*Properties:$'
+    return 1
+  else
+    return indent(v:lnum) / &shiftwidth + 1
+  endif
+endfunction
+
+augroup asciidoctor
+    au!
+    au BufNewFile,BufRead *.adoc setlocal ft=asciidoc
+"    au BufEnter *.adoc colorscheme summerfruit256
+    au BufEnter *.adoc,*.asciidoc call AsciidoctorMappings()
+augroup END
+
+nmap <c-c> <esc>
+imap <c-c> <esc>
+vmap <c-c> <esc>
+omap <c-c> <esc>
+
+
+"" Fold Asciidoc files at sections and using nested folds for subsections
+" compute the folding level
+function! AsciidocLevel()
+    if getline(v:lnum) =~ '^== .*$'
+        return ">1"
+    endif
+    if getline(v:lnum) =~ '^=== .*$'
+        return ">2"
+    endif
+    if getline(v:lnum) =~ '^==== .*$'
+        return ">3"
+    endif
+    if getline(v:lnum) =~ '^===== .*$'
+        return ">4"
+    endif
+    if getline(v:lnum) =~ '^====== .*$'
+        return ">5"
+    endif
+    if getline(v:lnum) =~ '^======= .*$'
+        return ">6"
+    endif
+    return "="
+endfunction
+" run the folding level method when asciidoc is here
+autocmd Syntax asciidoc setlocal foldexpr=AsciidocLevel()
+" enable folding method: expression on asciidoc
+autocmd Syntax asciidoc setlocal foldmethod=expr
+" start with text unfolded all the way
+autocmd BufRead *.adoc normal zR
+autocmd BufRead *.asciidoc normal zR
+" TODO following does not work as folding is lost up reloading
+" autocmd Syntax asciidoc normal zR
+"
+highlight clear SignColumn
+let g:gitgutter_sign_added = '|'
+let g:gitgutter_sign_modified = '|'
+let g:gitgutter_sign_removed = '|'
+let g:gitgutter_sign_modified_removed = '|'
+let g:ale_sign_error = '✘'
+let g:ale_sign_warning = '·'
+let g:syntastic_sign_error = '✘'
+let g:syntastic_sign_warning = '·'
+highlight ALEErrorSign ctermbg=NONE ctermfg=red
+highlight ALEWarningSign ctermbg=NONE ctermfg=yellow
+highlight ALEErrorSign ctermbg=NONE ctermfg=red
+highlight ALEWarningSign ctermbg=NONE ctermfg=yellow
+highlight SyntasticErrorSign ctermbg=NONE ctermfg=red
+highlight SyntasticWarningSign ctermbg=NONE ctermfg=yellow
+highlight SyntasticErrorSign ctermbg=NONE ctermfg=red
+highlight SyntasticWarningSign ctermbg=NONE ctermfg=yellow
+highlight GitGutterAdd ctermfg=2
+highlight GitGutterChange ctermfg=3
+highlight GitGutterDelete ctermfg=1
+highlight GitGutterChangeDelete ctermfg=4
+set cursorlineopt=number
+set cursorline
+
+highlight clear LineNr
+highlight clear Normal
+highlight LineNr cterm=none ctermfg=235 ctermbg=none
+highlight CursorLineNr cterm=bold ctermfg=Yellow
+highlight SideColumn ctermbg=none
+
