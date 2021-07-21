@@ -10,7 +10,7 @@ export LESS_TERMCAP_us=$'\e[1;4;31m'
 export PATH=$HOME/.toolbox/bin:$PATH
 # Path to your oh-my-zsh installation.
 export ZSH=$HOME/.oh-my-zsh
-
+export TERM=xterm-256color
 # Set name of the theme to load. Optionally, if you set this to "random"
 # it'll load a random theme each time that oh-my-zsh is loaded.
 # See https://github.com/robbyrussell/oh-my-zsh/wiki/Themes
@@ -58,8 +58,9 @@ ZSH_THEME="powerlevel10k/powerlevel10k"
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git virtualenv)
 VIRTUALENVWRAPPER_PYTHON=/usr/local/bin/python3
+plugins=(git pipenv virtualenv)
+
 source $ZSH/oh-my-zsh.sh
 export PATH=$PATH:/usr/local/bin:~/Library/Python/3.7/bin:~/bin
 # User configuration
@@ -169,3 +170,5 @@ export NVM_DIR="$HOME/.nvm"
 
 # To customize prompt, run `p10k configure` or edit ~/development/.local/.p10k.zsh.
 [[ ! -f ~/development/.local/.p10k.zsh ]] || source ~/development/.local/.p10k.zsh
+source ~/powerlevel10k/powerlevel10k.zsh-theme
+eval "$(rbenv init -)"

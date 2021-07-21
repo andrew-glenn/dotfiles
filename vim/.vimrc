@@ -460,18 +460,12 @@ cnoremap <C-P> <C-R>=expand("%:p:h") . "/" <CR>
 nnoremap <silent> <leader>b :Buffers<CR>
 nnoremap <silent> <leader>e :FZF -m<CR>
 
-" snippets
-let g:UltiSnipsExpandTrigger="<tab>"
-let g:UltiSnipsJumpForwardTrigger="<tab>"
-let g:UltiSnipsJumpBackwardTrigger="<c-b>"
-let g:UltiSnipsEditSplit="vertical"
-
 " syntastic
 let g:syntastic_always_populate_loc_list=1
-let g:syntastic_error_symbol='✗'
-let g:syntastic_warning_symbol='⚠'
-let g:syntastic_style_error_symbol = '✗'
-let g:syntastic_style_warning_symbol = '⚠'
+"let g:syntastic_error_symbol='✗'
+"let g:syntastic_warning_symbol='⚠'
+"let g:syntastic_style_error_symbol = '✗'
+"let g:syntastic_style_warning_symbol = '⚠'
 let g:syntastic_auto_loc_list=1
 let g:syntastic_aggregate_errors = 1
 let g:syntastic_check_on_open=1
@@ -532,6 +526,12 @@ noremap <leader>c :bd<CR>
 "" Clean search (highlight)
 nnoremap <silent> <leader><space> :noh<cr>
 
+"" Switching windows
+noremap <C-j> <C-w><C-j>
+noremap <C-u> <C-w><C-k>
+noremap <C-k> <C-w><C-l>
+noremap <C-h> <C-w><C-h>
+
 "" Vmap for maintain Visual Mode after shifting > and <
 vmap < <gv
 vmap > >gv
@@ -542,6 +542,21 @@ vnoremap K :m '<-2<CR>gv=gv
 
 "" Open current line on GitHub
 nnoremap <Leader>o :.Gbrowse<CR>
+
+map <C-a> GVgg
+map <C-a> GVgg
+map <C-n> :enew
+map <C-o> :e . <Enter>
+map <C-s> :w <Enter>
+map <C-c> y
+map <C-v> p
+map <C-x> d
+map <C-z> u
+map <C-t> :tabnew <Enter>
+map <C-i> >>
+map <leader>w :close <Enter>
+"map <C-W> :q! <Enter>
+map <C-f> /
 
 "*****************************************************************************
 "" Custom configs
@@ -700,7 +715,8 @@ else
   let g:airline_symbols.linenr = ''
 endif
 
-map <SPACE> <leader>
+
+
 let g:airline#extensions#tabline#enabled = 1
 "let g:ale_linter_aliases = {'yaml': ['css', 'javascript']}
 "let g:ale_linters = {'jsx': ['stylelint', 'eslint']}
