@@ -52,7 +52,7 @@ ZSH_THEME="powerlevel9k/powerlevel9k"
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(virtualenv)
+plugins=(pipenv virtualenv)
 
 source $ZSH/oh-my-zsh.sh
 export PATH=$PATH:/usr/local/bin:~/Library/Python/3.7/bin:~/bin
@@ -137,3 +137,5 @@ source ~/bin/functions.sh
 POWERLEVEL9K_SHORTEN_DIR_LENGTH=2
 POWERLEVEL9K_LEFT_PROMPT_ELEMENTS=(dir virtualenv  vcs)
 POWERLEVEL9K_VIRTUALENV_BACKGROUND='cyan'
+source ~/powerlevel10k/powerlevel10k.zsh-theme
+eval "$(rbenv init -)"
