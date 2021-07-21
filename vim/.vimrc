@@ -126,7 +126,8 @@ Plug 'sainnhe/gruvbox-material'
 Plug 'junegunn/goyo.vim'
 Plug 'bignimbus/you-are-here.vim'
 Plug 'ervandew/supertab'
-
+Plug 'patstockwell/vim-monokai-tasty'
+Plug 'hashivim/vim-terraform'
 if isdirectory('/usr/local/opt/fzf')
   Plug '/usr/local/opt/fzf' | Plug 'junegunn/fzf.vim'
 else
@@ -363,6 +364,8 @@ set autoread
 noremap <Leader>h :<C-u>split<CR>
 noremap <Leader>v :<C-u>vsplit<CR>
 
+"pbcopy for OSX copy/paste
+set clipboard=unnamedplus
 
 " session management
 "nnoremap <leader>so :OpenSession<Space>
@@ -377,7 +380,7 @@ nnoremap <silent> <S-t> :tabnew<CR>
 
 map s :write
 "up
-nnoremap <C-i> <C-W><C-K> 
+nnoremap <C-i> <C-W><C-K>
 "down
 nnoremap <C-k> <C-W><C-J>
 "left
@@ -390,7 +393,6 @@ nnoremap <C-y> :tabclose<CR>
 nnoremap <C-s> <C-W><C-S>
 nnoremap <C-d> <C-w><C-q>
 nnoremap <C-R> :source ~/.vimrc<CR>
-map <C-a> GVgg
 map <C-a> GVgg
 map <C-n> :enew
 map <C-o> :e . <Enter>
@@ -475,8 +477,9 @@ let g:syntastic_aggregate_errors = 1
 let g:syntastic_check_on_open=1
 let g:syntastic_check_on_wq=0
 let g:syntastic_cloudformation_checkers = ['cfn_lint']
+let g:syntastic_terraform_checkers = ['tflint']
 
-"" Rainbow active. 
+"" Rainbow active.
 "let g:rainbow_active = 1
 
 " vimshell
@@ -516,11 +519,6 @@ noremap YY "+y<CR>
 noremap <leader>p "+gP<CR>
 noremap XX "+x<CR>
 
-if has('macunix')
-  " pbcopy for OSX copy/paste
-  vmap <C-x> :!pbcopy<CR>
-  vmap <C-c> :w !pbcopy<CR><CR>
-endif
 
 "" Buffer nav
 noremap <leader>z :bp<CR>
@@ -713,7 +711,7 @@ set statusline+=%{SyntasticStatuslineFlag()}
 set statusline+=%*
 
 
-" Terminal Background. 
+" Terminal Background.
 hi Normal ctermbg=NONE
 hi Nontext ctermbg=NONE
 
@@ -735,17 +733,21 @@ let g:syntastic_python_checkers = ['python3']
 
 set termguicolors     " enable true colors support
 let ayucolor="dark"   " for dark version of theme
-colorscheme molokai
+colorscheme jellybeans
 
 "=====================================================
 "" Terraform Settings
 "=====================================================
 augroup terraform
     au!
-    au BufNewFile,BufRead *.tf setlocal ft=terraform
-    au BufNewFile,BufRead *.hcl setlocal ft=terraform
-    au BufEnter *.tf colorscheme wombat256mod
+"    au BufNewFile,BufRead *.tf setlocal ft=terraform
+"    au BufNewFile,BufRead *.hcl setlocal ft=terraform
+    au BufEnter *.tf colorscheme wombat256i
 augroup END
+
+let g:terraform_align=1
+let g:terraform_fold_sections=1
+let g:terraform_fmt_on_save=1
 
 "=====================================================
 "" Markdown Settings
@@ -857,4 +859,3 @@ highlight clear Normal
 highlight LineNr cterm=none ctermfg=235 ctermbg=none
 highlight CursorLineNr cterm=bold ctermfg=Yellow
 highlight SideColumn ctermbg=none
-
