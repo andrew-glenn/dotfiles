@@ -31,19 +31,14 @@ call plug#begin(expand('~/.vim/plugged'))
 "*****************************************************************************
 "" Plug install packages
 "*****************************************************************************
-"Plug 'Raimondi/delimitMate'
-"Plug 'Yggdroot/indentLine'
 Plug 'airblade/vim-gitgutter'
 Plug 'avelino/vim-bootstrap-updater'
-"Plug 'bronson/vim-trailing-whitespace'
 Plug 'flazz/vim-colorschemes'
-"Plug 'fortes/vim-escuro'
 Plug 'jistr/vim-nerdtree-tabs'
 Plug 'luochen1990/rainbow'
 Plug 'majutsushi/tagbar'
 Plug 'scrooloose/nerdcommenter'
 Plug 'scrooloose/nerdtree'
-"Plug 'sheerun/vim-polyglot'
 Plug 'tpope/vim-commentary'
 Plug 'tpope/vim-fugitive'
 Plug 'vim-airline/vim-airline'
@@ -51,13 +46,8 @@ Plug 'vim-airline/vim-airline-themes'
 Plug 'vim-scripts/CSApprox'
 Plug 'vim-scripts/grep.vim'
 Plug 'w0rp/ale'
-"Plug 'davidhalter/jedi-vim'
 Plug 'stevearc/vim-arduino'
 Plug 'morhetz/gruvbox'
-"PPlug 'SirVer/ultisnips'
-"Plug 'sudar/vim-arduino-syntax'
-"Plug 'sudar/vim-arduino-snippets'
-"Plug 'https://github.com/Siprah/vim-todoist'
 Plug 'jiangmiao/auto-pairs'
 "-- Cloudformation"
 Plug 'scrooloose/syntastic'
@@ -90,22 +80,17 @@ Plug 'phanviet/vim-monokai-pro'
 "*****************************************************************************
 "" Custom bundles
 "*****************************************************************************
-
+"Plug 'tombh/novim-mode'
 " go
 "" Go Lang Bundle
 Plug 'fatih/vim-go', {'do': ':GoInstallBinaries'}
-
-
-" javascript
-"" Javascript Bundle
-"Plug 'jelera/vim-javascript-syntax'
-
 
 " python
 "" Python Bundle
 Plug 'raimon49/requirements.txt.vim', {'for': 'requirements'}
 Plug 'jceb/vim-orgmode'
-
+Plug 'ryanoasis/vim-devicons'
+Plug 'bignimbus/you-are-here.vim'
 "*****************************************************************************
 "*****************************************************************************
 
@@ -373,10 +358,10 @@ nnoremap <S-Tab> gT
 nnoremap <silent> <S-t> :tabnew<CR>
 
 map s :write
-nnoremap <C-J> <C-W><C-J>
-nnoremap <C-K> <C-W><C-K>
-nnoremap <C-L> <C-W><C-L>
-nnoremap <C-H> <C-W><C-H>
+"nnoremap <C-J> <C-W><C-J>
+"nnoremap <C-K> <C-W><C-K>
+"nnoremap <C-L> <C-W><C-L>
+"nnoremap <C-H> <C-W><C-H>
 nnoremap <C-t> :tabnew<CR>
 nnoremap <C-y> :tabclose<CR>
 nnoremap <C-s> <C-W><C-S>
@@ -414,18 +399,12 @@ cnoremap <C-P> <C-R>=expand("%:p:h") . "/" <CR>
 nnoremap <silent> <leader>b :Buffers<CR>
 nnoremap <silent> <leader>e :FZF -m<CR>
 
-" snippets
-let g:UltiSnipsExpandTrigger="<tab>"
-let g:UltiSnipsJumpForwardTrigger="<tab>"
-let g:UltiSnipsJumpBackwardTrigger="<c-b>"
-let g:UltiSnipsEditSplit="vertical"
-
 " syntastic
 let g:syntastic_always_populate_loc_list=1
-let g:syntastic_error_symbol='✗'
-let g:syntastic_warning_symbol='⚠'
-let g:syntastic_style_error_symbol = '✗'
-let g:syntastic_style_warning_symbol = '⚠'
+"let g:syntastic_error_symbol='✗'
+"let g:syntastic_warning_symbol='⚠'
+"let g:syntastic_style_error_symbol = '✗'
+"let g:syntastic_style_warning_symbol = '⚠'
 let g:syntastic_auto_loc_list=1
 let g:syntastic_aggregate_errors = 1
 let g:syntastic_check_on_open=1
@@ -491,10 +470,10 @@ noremap <leader>c :bd<CR>
 nnoremap <silent> <leader><space> :noh<cr>
 
 "" Switching windows
-noremap <C-j> <C-w>j
-noremap <C-u> <C-w>k
-noremap <C-k> <C-w>l
-noremap <C-h> <C-w>h
+noremap <C-j> <C-w><C-j>
+noremap <C-u> <C-w><C-k>
+noremap <C-k> <C-w><C-l>
+noremap <C-h> <C-w><C-h>
 
 "" Vmap for maintain Visual Mode after shifting > and <
 vmap < <gv
@@ -518,8 +497,8 @@ map <C-x> d
 map <C-z> u
 map <C-t> :tabnew <Enter>
 map <C-i> >>
-map <C-w> :close <Enter>
-map <C-W> :q! <Enter>
+map <leader>w :close <Enter>
+"map <C-W> :q! <Enter>
 map <C-f> /
 
 "*****************************************************************************
@@ -679,7 +658,8 @@ else
   let g:airline_symbols.linenr = ''
 endif
 
-map <SPACE> <leader>
+
+
 let g:airline#extensions#tabline#enabled = 1
 "let g:ale_linter_aliases = {'yaml': ['css', 'javascript']}
 "let g:ale_linters = {'jsx': ['stylelint', 'eslint']}
@@ -730,3 +710,63 @@ vnoremap <Space> zf
 let g:syntastic_python_checkers = ['python3']
 
 hi DiffAdd gui=NONE guifg=green guibg=black
+start
+
+" Indenting
+  " TODO: In Neovim TAB doesn't work in mswin selection mode, but SHIFT+TAB does??
+  snoremap <Tab> <C-O>>gv
+  inoremap <M-]> <C-T>
+  snoremap <M-]> <C-O>>gv
+  " Unindenting
+  snoremap <S-Tab> <C-O><gv
+  inoremap <M-[> <C-D>
+  snoremap <M-[> <C-O><gv
+
+" CTRL+n for new file
+inoremap <C-N> <C-O>:edit<Space>
+" CTRL+o to open file
+" TODO: hook into netrw or NERDTree
+inoremap <C-O> <C-O>:edit<Space>
+" CTRL+s saves
+inoremap <silent> <C-S> <C-O>:update<CR>
+
+" Fix HOME to go back to the first non-whitespace character of the line.
+inoremap <silent> <Home> <C-O>^
+" The same but for selection behaviour
+inoremap <silent> <S-Home> <S-Left><C-G><C-O>^
+snoremap <silent> <S-Home> <C-O>^
+
+" HOME/END for *visible* lines, not literal lines
+inoremap <buffer> <silent> <Home> <C-O>g^
+inoremap <buffer> <silent> <End> <C-O>g$
+" For selection behaviour
+inoremap <buffer> <silent> <S-Home> <S-Left><C-G><C-O>g^
+snoremap <buffer> <silent> <S-Home> <C-O>g^
+inoremap <buffer> <silent> <S-End> <S-Right><C-G><C-O>g$
+snoremap <buffer> <silent> <S-End> <C-O>g$
+vmap <leader>x :!pbcopy<CR>
+vmap <leader>c :w !pbcopy<CR><CR>
+nnoremap <silent> <leader>\ :call you_are_here#ToggleFor(2500)<CR>
+highlight clear SignColumn
+let g:gitgutter_sign_added = '|'
+let g:gitgutter_sign_modified = '|'
+let g:gitgutter_sign_removed = '|'
+let g:gitgutter_sign_modified_removed = '|'
+let g:ale_sign_error = '✘'
+let g:ale_sign_warning = '·'
+let g:syntastic_sign_error = '✘'
+let g:syntastic_sign_warning = '·'
+highlight ALEErrorSign ctermbg=NONE ctermfg=red
+highlight ALEWarningSign ctermbg=NONE ctermfg=yellow
+highlight ALEErrorSign ctermbg=NONE ctermfg=red
+highlight ALEWarningSign ctermbg=NONE ctermfg=yellow
+highlight SyntasticErrorSign ctermbg=NONE ctermfg=red
+highlight SyntasticWarningSign ctermbg=NONE ctermfg=yellow
+highlight SyntasticErrorSign ctermbg=NONE ctermfg=red
+highlight SyntasticWarningSign ctermbg=NONE ctermfg=yellow
+
+set cursorlineopt=number
+set cursorline
+
+highlight LineNr cterm=none ctermfg=235 ctermbg=none
+highlight CursorLineNr cterm=bold ctermfg=Yellow
