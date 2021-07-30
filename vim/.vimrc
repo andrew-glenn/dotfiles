@@ -1,7 +1,5 @@
-" vim-bootstrap b990cad
-
 "*****************************************************************************
-"" Vim-PLug core
+"" Vim-Plug core
 "*****************************************************************************
 if has('vim_starting')
   set nocompatible               " Be iMproved
@@ -36,42 +34,24 @@ Plug 'avelino/vim-bootstrap-updater'
 Plug 'flazz/vim-colorschemes'
 Plug 'jistr/vim-nerdtree-tabs'
 Plug 'luochen1990/rainbow'
-Plug 'majutsushi/tagbar'
-Plug 'scrooloose/nerdcommenter'
-Plug 'scrooloose/nerdtree'
+Plug 'preservim/nerdtree'
 Plug 'tpope/vim-commentary'
-Plug 'tpope/vim-fugitive'
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 Plug 'vim-scripts/CSApprox'
-Plug 'vim-scripts/grep.vim'
 Plug 'w0rp/ale'
-Plug 'stevearc/vim-arduino'
-Plug 'morhetz/gruvbox'
 Plug 'jiangmiao/auto-pairs'
 "-- Cloudformation"
 Plug 'scrooloose/syntastic'
 Plug 'speshak/vim-cfn'
 Plug 'jaredgorski/spacecamp'
+Plug 'joshdick/onedark.vim'
+Plug 'sainnhe/sonokai'
 
-if isdirectory('/usr/local/opt/fzf')
-  Plug '/usr/local/opt/fzf' | Plug 'junegunn/fzf.vim'
-else
-  Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --bin' }
-  Plug 'junegunn/fzf.vim'
-endif
 let g:make = 'gmake'
 if exists('make')
         let g:make = 'make'
 endif
-"Plug 'Shougo/vimproc.vim', {'do': g:make}
-
-"" Vim-Session
-Plug 'xolox/vim-misc'
-Plug 'xolox/vim-session'
-
-
-Plug 'honza/vim-snippets'
 
 "" Color
 Plug 'tomasr/molokai'
@@ -80,7 +60,6 @@ Plug 'phanviet/vim-monokai-pro'
 "*****************************************************************************
 "" Custom bundles
 "*****************************************************************************
-"Plug 'tombh/novim-mode'
 " go
 "" Go Lang Bundle
 Plug 'fatih/vim-go', {'do': ':GoInstallBinaries'}
@@ -88,7 +67,6 @@ Plug 'fatih/vim-go', {'do': ':GoInstallBinaries'}
 " python
 "" Python Bundle
 Plug 'raimon49/requirements.txt.vim', {'for': 'requirements'}
-Plug 'jceb/vim-orgmode'
 Plug 'ryanoasis/vim-devicons'
 Plug 'bignimbus/you-are-here.vim'
 "*****************************************************************************
@@ -99,10 +77,35 @@ if filereadable(expand("~/.vimrc.local.bundles"))
   source ~/.vimrc.local.bundles
 endif
 
-call plug#end()
 
+Plug 'ryanoasis/vim-devicons'
+
+Plug 'tiagofumo/vim-nerdtree-syntax-highlight'
+Plug 'Xuyuanp/nerdtree-git-plugin'
+Plug 't9md/vim-choosewin'
+Plug 'weilbith/nerdtree_choosewin-plugin'
+Plug 'cormacrelf/vim-colors-github'
+Plug 'wojciechkepka/vim-github-dark'
+Plug 'davidhalter/jedi-vim'
+
+call plug#end()
 " Required:
 filetype plugin indent on
+let g:NERDTreeGitStatusIndicatorMapCustom = {
+    \ "Modified"  : "⋆",
+    \ "Staged"    : "•",
+    \ "Untracked" : "∘",
+    \ "Dirty"     : "⁖",
+    \ "Clean"     : "✔︎",
+    \ }
+
+let g:NERDTreeColorMapCustom = {
+    \ "Modified"  : "#528AB3",
+    \ "Staged"    : "#538B54",
+    \ "Untracked" : "#BE5849",
+    \ "Dirty"     : "#299999",
+    \ "Clean"     : "#87939A"
+    \ }
 
 
 "*****************************************************************************
@@ -170,13 +173,16 @@ if !exists('g:not_finish_vimplug')
   colorscheme anderson
 endif
 
-colorscheme monokai
 set ruler
 set mouse=a
 set mousemodel=popup
 set t_Co=256
 set guioptions=egmrti
 set gfn=Monospace\ 10
+
+" Terminal Background.
+hi Normal ctermbg=NONE
+hi Nontext ctermbg=NONE
 
 if has("gui_running")
   if has("gui_mac") || has("gui_macvim")
@@ -258,6 +264,9 @@ cnoreabbrev W w
 cnoreabbrev Q q
 cnoreabbrev Qall qall
 
+"*****************************************************************************
+"" NERDTree
+"*****************************************************************************
 "" NERDTree configuration
 let g:NERDTreeChDirMode=2
 let g:NERDTreeIgnore=['\.rbc$', '\~$', '\.pyc$', '\.db$', '\.sqlite$', '__pycache__']
@@ -267,25 +276,12 @@ let g:nerdtree_tabs_focus_on_files=1
 let g:NERDTreeMapOpenInTabSilent = '<RightMouse>'
 let g:NERDTreeWinSize = 50
 set wildignore+=*/tmp/*,*.so,*.swp,*.zip,*.pyc,*.db,*.sqlite
-nnoremap <silent> <F2> :NERDTreeFind<CR>
-nnoremap <silent> <F3> :NERDTreeToggle<CR>
+nnoremap <silent> <F2> :NERDTreeToggle<CR>
+nnoremap <leader>n :NERDTreeFocus<CR>
 
-" grep.vim
-nnoremap <silent> <leader>f :Rgrep<CR>
-let Grep_Default_Options = '-IR'
-let Grep_Skip_Files = '*.log *.db'
-let Grep_Skip_Dirs = '.git node_modules'
 
-" vimshell.vim
-let g:vimshell_user_prompt = 'fnamemodify(getcwd(), ":~")'
-let g:vimshell_prompt =  '$ '
-
-" terminal emulation
-if g:vim_bootstrap_editor == 'nvim'
-  nnoremap <silent> <leader>sh :terminal<CR>
-else
-  nnoremap <silent> <leader>sh :VimShellCreate<CR>
-endif
+nmap - <Plug>(choosewin)
+let g:choosewin_overlay_enable = 1
 
 "*****************************************************************************
 "" Functions
@@ -297,6 +293,29 @@ if !exists('*s:setupWrapping')
     set textwidth=79
   endfunction
 endif
+
+function! s:build_go_files()
+  let l:file = expand('%')
+  if l:file =~# '^\f\+_test\.go$'
+    call go#test#Test(0, 1)
+  elseif l:file =~# '^\f\+\.go$'
+    call go#cmd#Build(0)
+  endif
+endfunction
+
+function! s:ZoomToggle() abort
+    if exists('t:zoomed') && t:zoomed
+        execute t:zoom_winrestcmd
+        let t:zoomed = 0
+    else
+        let t:zoom_winrestcmd = winrestcmd()
+        resize
+        vertical resize
+        let t:zoomed = 1
+    endif
+endfunction
+command! ZoomToggle call s:ZoomToggle()
+nnoremap <Leader><Leader> :ZoomToggle<CR>
 
 "*****************************************************************************
 "" Autocmd Rules
@@ -331,6 +350,8 @@ set autoread
 "*****************************************************************************
 "" Mappings
 "*****************************************************************************
+"
+
 
 "" Split
 noremap <Leader>h :<C-u>split<CR>
@@ -377,27 +398,6 @@ noremap <Leader>e :e <C-R>=expand("%:p:h") . "/" <CR>
 "" Opens a tab edit command with the path of the currently edited file filled
 noremap <Leader>te :tabe <C-R>=expand("%:p:h") . "/" <CR>
 
-"" fzf.vim
-set wildmode=list:longest,list:full
-set wildignore+=*.o,*.obj,.git,*.rbc,*.pyc,__pycache__
-let $FZF_DEFAULT_COMMAND =  "find * -path '*/\.*' -prune -o -path 'node_modules/**' -prune -o -path 'target/**' -prune -o -path 'dist/**' -prune -o  -type f -print -o -type l -print 2> /dev/null"
-
-" The Silver Searcher
-if executable('ag')
-  let $FZF_DEFAULT_COMMAND = 'ag --hidden --ignore .git -g ""'
-  set grepprg=ag\ --nogroup\ --nocolor
-endif
-
-" ripgrep
-if executable('rg')
-  let $FZF_DEFAULT_COMMAND = 'rg --files --hidden --follow --glob "!.git/*"'
-  set grepprg=rg\ --vimgrep
-  command! -bang -nargs=* Find call fzf#vim#grep('rg --column --line-number --no-heading --fixed-strings --ignore-case --hidden --follow --glob "!.git/*" --color "always" '.shellescape(<q-args>).'| tr -d "\017"', 1, <bang>0)
-endif
-
-cnoremap <C-P> <C-R>=expand("%:p:h") . "/" <CR>
-nnoremap <silent> <leader>b :Buffers<CR>
-nnoremap <silent> <leader>e :FZF -m<CR>
 
 " syntastic
 let g:syntastic_always_populate_loc_list=1
@@ -410,28 +410,23 @@ let g:syntastic_aggregate_errors = 1
 let g:syntastic_check_on_open=1
 let g:syntastic_check_on_wq=0
 let g:syntastic_cloudformation_checkers = ['cfn_lint']
+let g:syntastic_go_checkers = ['golint', 'govet']
+let g:syntastic_mode_map = { 'mode': 'active', 'passive_filetypes': ['go'] }
 
-" Rainbow active. 
+" Rainbow active.
 let g:rainbow_active = 1
-
-" vimshell
-nmap <silent> <F12> :VimShell<CR>
-nmap <silent> <C-F12> :VimShellTab<CR>
-
-" Tagbar
-nmap <silent> <F4> :TagbarToggle<CR>
 
 " window
 nmap <leader>sw<left>  :topleft  vnew<CR>
 nmap <leader>sw<right> :botright vnew<CR>
 nmap <leader>sw<up>    :topleft  new<CR>
 nmap <leader>sw<down>  :botright new<CR>
+
 " buffer
 nmap <leader>s<left>   :leftabove  vnew<CR>
 nmap <leader>s<right>  :rightbelow vnew<CR>
 nmap <leader>s<up>     :leftabove  new<CR>
 nmap <leader>s<down>   :rightbelow new<CR>
-
 
 nmap <C-=> <leader>c<Space>
 vmap <C-=> <leader>c<Space>
@@ -447,15 +442,7 @@ if has('unnamedplus')
   set clipboard=unnamed,unnamedplus
 endif
 
-noremap YY "+y<CR>
 noremap <leader>p "+gP<CR>
-noremap XX "+x<CR>
-
-if has('macunix')
-  " pbcopy for OSX copy/paste
-  vmap <C-x> :!pbcopy<CR>
-  vmap <C-c> :w !pbcopy<CR><CR>
-endif
 
 "" Buffer nav
 noremap <leader>z :bp<CR>
@@ -502,27 +489,16 @@ map <leader>w :close <Enter>
 map <C-f> /
 
 "*****************************************************************************
-"" Custom configs
+"" SYNTAX configs
 "*****************************************************************************
 
 " go
 " vim-go
 " run :GoBuild or :GoTestCompile based on the go file
-function! s:build_go_files()
-  let l:file = expand('%')
-  if l:file =~# '^\f\+_test\.go$'
-    call go#test#Test(0, 1)
-  elseif l:file =~# '^\f\+\.go$'
-    call go#cmd#Build(0)
-  endif
-endfunction
 
 let g:go_list_type = "quickfix"
 let g:go_fmt_command = "goimports"
 let g:go_fmt_fail_silently = 1
-let g:syntastic_go_checkers = ['golint', 'govet']
-let g:syntastic_mode_map = { 'mode': 'active', 'passive_filetypes': ['go'] }
-
 let g:go_highlight_types = 1
 let g:go_highlight_fields = 1
 let g:go_highlight_functions = 1
@@ -571,16 +547,6 @@ augroup go
 augroup END
 
 
-" javascript
-let g:javascript_enable_domhtmlcss = 1
-
-" vim-javascript
-augroup vimrc-javascript
-  autocmd!
-  autocmd FileType javascript set tabstop=4|set shiftwidth=4|set expandtab softtabstop=4
-augroup END
-
-
 " python
 " vim-python
 augroup vimrc-python
@@ -592,9 +558,9 @@ augroup END
 
 " jedi-vim
 let g:jedi#popup_on_dot = 1
-let g:zjedi#goto_assignments_command = "<leader>g"
+let g:jedi#goto_assignments_command = "<leader>g"
 let g:jedi#goto_definitions_command = "<leader>d"
-let g:jedi#documentation_command = "K"
+let g:jedi#documentation_command = "<C-k>"
 let g:jedi#usages_command = "<leader>n"
 let g:jedi#rename_command = "<leader>r"
 let g:jedi#show_call_signatures = "0"
@@ -609,14 +575,6 @@ let g:airline#extensions#virtualenv#enabled = 1
 let g:polyglot_disabled = ['python']
 let python_highlight_all = 1
 
-
-"*****************************************************************************
-"*****************************************************************************
-
-"" Include user's local vim config
-if filereadable(expand("~/.vimrc.local"))
-  source ~/.vimrc.local
-endif
 
 "*****************************************************************************
 "" Convenience variables
@@ -668,43 +626,6 @@ let g:airline#extensions#tabline#enabled = 1
 set statusline+=%#warningmsg#
 set statusline+=%{SyntasticStatuslineFlag()}
 set statusline+=%*
-
-
-" Terminal Background. 
-hi Normal ctermbg=NONE
-hi Nontext ctermbg=NONE
-
-nnoremap <buffer> <leader>am :ArduinoVerify<CR>
-nnoremap <buffer> <leader>au :ArduinoUpload<CR>
-nnoremap <buffer> <leader>ad :ArduinoUploadAndSerial<CR>
-nnoremap <buffer> <leader>ab :ArduinoChooseBoard<CR>
-nnoremap <buffer> <leader>ap :ArduinoChooseProgrammer<CR>
-
-" my_file.ino [arduino:avr:uno] [arduino:usbtinyisp] (/dev/ttyACM0:9600)
-function! MyStatusLine()
-  let port = arduino#GetPort()
-  let line = '%f [' . g:arduino_board . '] [' . g:arduino_programmer . ']'
-  if !empty(port)
-    let line = line . ' (' . port . ':' . g:arduino_serial_baud . ')'
-  endif
-  return line
-endfunction
-setl statusline=%!MyStatusLine()
-
-" Home and End key remapping. 
-map <ESC>[H <Home>
-map <ESC>[F <End>
-imap <ESC>[H <C-O><Home>
-imap <ESC>[F <C-O><End>
-cmap <ESC>[H <Home>
-cmap <ESC>[F <End>
-
-autocmd BufNewFile,BufRead *.ino let g:airline_section_x='%{MyStatusLine()}'
-autocmd FileType yaml setlocal ts=2 sts=-1 sw=2 expandtab indentkeys-=0# indentkeys-=<:>
-au! BufNewFile,BufReadPost *.{yaml} set filetype=yaml.cloudformation  foldmethod=manual
-" Folding settings.
-nnoremap <silent> <Space> @=(foldlevel('.')?'za':"\<Space>")<CR>
-vnoremap <Space> zf
 
 
 let g:syntastic_python_checkers = ['python3']
