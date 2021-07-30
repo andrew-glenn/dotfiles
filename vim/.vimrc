@@ -66,9 +66,9 @@ Plug 'fatih/vim-go', {'do': ':GoInstallBinaries'}
 
 " python
 "" Python Bundle
-Plug 'raimon49/requirements.txt.vim', {'for': 'requirements'}
-Plug 'ryanoasis/vim-devicons'
-Plug 'bignimbus/you-are-here.vim'
+
+"Plug 'raimon49/requirements.txt.vim', {'for': 'requirements'}
+"Plug 'bignimbus/you-are-here.vim'
 "*****************************************************************************
 "*****************************************************************************
 
@@ -178,36 +178,36 @@ set mouse=a
 set mousemodel=popup
 set t_Co=256
 set guioptions=egmrti
-set gfn=Monospace\ 10
+"set gfn=Monospace\ 10
 
 " Terminal Background.
 hi Normal ctermbg=NONE
 hi Nontext ctermbg=NONE
 
-if has("gui_running")
-  if has("gui_mac") || has("gui_macvim")
-    set guifont=Menlo:h12
-    set transparency=7
-  endif
-else
-  let g:CSApprox_loaded = 1
+" if has("gui_running")
+"   if has("gui_mac") || has("gui_macvim")
+"     set guifont=Menlo:h12
+"     set transparency=7
+"   endif
+" else
+"   let g:CSApprox_loaded = 1
 
-  " IndentLine
-  let g:indentLine_enabled = 1
-  let g:indentLine_concealcursor = 0
-  let g:indentLine_char = '┆'
-  let g:indentLine_faster = 1
+"   " IndentLine
+"   let g:indentLine_enabled = 1
+"   let g:indentLine_concealcursor = 0
+"   let g:indentLine_char = '┆'
+"   let g:indentLine_faster = 1
 
 
-  if $COLORTERM == 'gnome-terminal'
-    set term=gnome-256color
-  else
-    if $TERM == 'xterm'
-      set term=xterm-256color
-    endif
-  endif
+"   if $COLORTERM == 'gnome-terminal'
+"     set term=gnome-256color
+"   else
+"     if $TERM == 'xterm'
+"       set term=xterm-256color
+"     endif
+"   endif
 
-endif
+" endif
 
 
 if &term =~ '256color'
@@ -551,7 +551,7 @@ augroup END
 " vim-python
 augroup vimrc-python
   autocmd!
-  autocmd FileType python setlocal expandtab shiftwidth=4 tabstop=8 colorcolumn=79
+  autocmd FileType python setlocal expandtab shiftwidth=4 tabstop=8 colorcolumn=0
       \ formatoptions+=croq softtabstop=4
       \ cinwords=if,elif,else,for,while,try,except,finally,def,class,with
 augroup END
@@ -585,6 +585,7 @@ if !exists('g:airline_symbols')
   let g:airline_symbols = {}
 endif
 
+let g:airline_powerline_fonts = 1
 if !exists('g:airline_powerline_fonts')
   let g:airline#extensions#tabline#left_sep = ' '
   let g:airline#extensions#tabline#left_alt_sep = '|'
@@ -691,3 +692,6 @@ set cursorline
 
 highlight LineNr cterm=none ctermfg=235 ctermbg=none
 highlight CursorLineNr cterm=bold ctermfg=Yellow
+set encoding=UTF-8
+colorscheme ghdark
+set colorcolumn=00
