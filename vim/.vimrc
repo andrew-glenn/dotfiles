@@ -47,6 +47,8 @@ Plug 'speshak/vim-cfn'
 Plug 'jaredgorski/spacecamp'
 Plug 'joshdick/onedark.vim'
 Plug 'sainnhe/sonokai'
+" Vim Script
+Plug 'folke/zen-mode.nvim'
 
 let g:make = 'gmake'
 if exists('make')
@@ -87,7 +89,12 @@ Plug 'weilbith/nerdtree_choosewin-plugin'
 Plug 'cormacrelf/vim-colors-github'
 Plug 'wojciechkepka/vim-github-dark'
 Plug 'davidhalter/jedi-vim'
-
+"Plug 'numirias/semshi', { 'do': ':UpdateRemotePlugins' }
+Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' }
+Plug 'nvim-lua/plenary.nvim'
+Plug 'nvim-telescope/telescope.nvim'
+Plug 'nvim-telescope/telescope-fzy-native.nvim'
+Plug 'pedrohdz/vim-yaml-folds'
 call plug#end()
 " Required:
 filetype plugin indent on
@@ -488,6 +495,8 @@ map <leader>w :close <Enter>
 "map <C-W> :q! <Enter>
 map <C-f> /
 
+
+nmap zz zA
 "*****************************************************************************
 "" SYNTAX configs
 "*****************************************************************************
@@ -693,5 +702,6 @@ set cursorline
 highlight LineNr cterm=none ctermfg=235 ctermbg=none
 highlight CursorLineNr cterm=bold ctermfg=Yellow
 set encoding=UTF-8
-colorscheme ghdark
+colorscheme gruvbox
 set colorcolumn=00
+hi Normal guibg=NONE ctermbg=NONE
