@@ -1,3 +1,10 @@
+# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
+# Initialization code that may require console input (password prompts, [y/n]
+# confirmations, etc.) must go above this block; everything else may go below.
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 export LESS_TERMCAP_mb=$'\e[1;32m'
@@ -58,8 +65,7 @@ ZSH_THEME="powerlevel10k/powerlevel10k"
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-VIRTUALENVWRAPPER_PYTHON=/usr/local/bin/python3
-plugins=(git pipenv virtualenv)
+plugins=(git pyenv zsh-pyenv)
 
 source $ZSH/oh-my-zsh.sh
 export PATH=$PATH:/usr/local/bin:~/Library/Python/3.7/bin:~/bin
@@ -102,12 +108,9 @@ powerlevel9k_PROMPT_ON_NEWLINE=false
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 alias ll="ls -lah"
 alias cleardns="sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder"
-alias desc="aws ec2 describe-instances --query 'Reservations[].Instances[].[Tags[?Key==\`Name\`] | [0].Value, InstanceId, State.Name, PublicIpAddress]' --output table"
 alias ssh="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 alias mid="sudo plutil -convert xml1 /Library/Managed\ Preferences/andglenn/com.google.Chrome.plist && sudo sed -i -e "\"'4r /Users/andglenn/Documents/chrome.txt'\"" /Library/Managed\ Preferences/andglenn/com.google.Chrome.plist"
 alias hardmid="sudo plutil -convert xml1 /Library/Managed\ Preferences/andglenn/com.google.Chrome.plist && sudo sed -i -e "\"'4r /Users/andglenn/Documents/chromeHard.txt'\"" /Library/Managed\ Preferences/andglenn/com.google.Chrome.plist"
-alias mcurl="curl $@ -L --cookie ~/.midway/cookie --cookie-jar ~/.midway/cookie"
-alias python='python3'
 #alias pip='pip3'
 source /usr/local/bin/virtualenvwrapper.sh
 source $ZSH/oh-my-zsh.sh
@@ -172,3 +175,8 @@ export NVM_DIR="$HOME/.nvm"
 [[ ! -f ~/development/.local/.p10k.zsh ]] || source ~/development/.local/.p10k.zsh
 source ~/powerlevel10k/powerlevel10k.zsh-theme
 eval "$(rbenv init -)"
+eval "$(pyenv init -)"
+eval "$(pyenv virtualenv-init -)"
+
+# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
