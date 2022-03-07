@@ -67,27 +67,3 @@ _toggle_pane_sync(){
    tmux capture-pane -J -S - -E - -b "fpp-$1" -t "$1"
    tmux split-window "tmux show-buffer -b fpp-$1 | fpp || true; tmux delete-buffer -b fpp-$1"
  }
-
- 
- _toggle_chime_mute(){
-   if [ ! "$(which osascript)" ]; then
-     tmux display "Applescript not available!"
-     return
-  fi
-  osascript <<EOD
-tell application "System Events"
-	tell application process "Amazon Chime"
-		try
-			set frontmost to true
-			perform action "AXRaise" of (first window whose name contains "Meeting" or "Bridge")
-		end try
-	end tell
-	key down {{command}}
-	keystroke "y"
-	key up {{command}}
-end tell
-EOD
-tmux display "Chime Mute toggled!"
-}
-
-
