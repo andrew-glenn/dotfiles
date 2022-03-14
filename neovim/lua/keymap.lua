@@ -10,7 +10,7 @@
 --]]
 local opts = { noremap = true, silent = true }
 vim.api.nvim_set_keymap('n', '<F2>', ':NvimTreeToggle<CR>', opts)
-
+vim.api.nvim_set_keymap('v', '<C-_>', ':CommentToggle<CR>', opts)
 -- Copy and paste like VS code
 -- vim.api.nvim_set_keymap('n', '<C-x>', 'dd', opts)
 -- vim.api.nvim_set_keymap('n', '<C-v>', 'p', opts)
