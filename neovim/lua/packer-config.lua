@@ -71,6 +71,7 @@ packer.startup(function(use)
 	use({ "honza/vim-snippets" })
 	use({ "terrortylor/nvim-comment" })
 	use({ "jose-elias-alvarez/null-ls.nvim" })
+  use({ "hashivim/vim-terraform"})
 
 	-- Syntax highlighter
 	-- ---------------------
