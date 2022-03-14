@@ -9,7 +9,7 @@
             |___/                |_|
 --]]
 local opts = { noremap = true, silent = true }
--- vim.api.nvim_set_keymap('n', '<C-b>', ':NvimTreeToggle<CR>', opts)
+vim.api.nvim_set_keymap('n', '<F2>', ':NvimTreeToggle<CR>', opts)
 
 -- Copy and paste like VS code
 -- vim.api.nvim_set_keymap('n', '<C-x>', 'dd', opts)
@@ -48,7 +48,6 @@ local opts = { noremap = true, silent = true }
 --   ':Telescope lsp_document_symbols prompt_prefix=🔍<CR>',
 --   opts)
 
-vim.api.nvim_set_keymap("n", "<F2>", "<cmd>lua vim.lsp.buf.rename()<CR>", opts)
 vim.api.nvim_set_keymap("n", "<leader><leader>b", ":Telescope buffers<CR>", opts)
 vim.api.nvim_set_keymap("n", "<leader><leader>g", ":Telescope live_grep<CR>", opts)
 vim.api.nvim_set_keymap("n", "<leader><leader>w", ":Telescope workspaces<CR>", opts)
@@ -56,15 +55,19 @@ vim.api.nvim_set_keymap("n", "<leader><leader>c", ":CommentToggle<CR>", opts)
 vim.api.nvim_set_keymap("n", "<leader><leader>f", "<cmd>lua vim.lsp.buf.formatting()<CR>", opts)
 
 -- folding
--- vim.api.nvim_set_keymap("n", "<C-]>", "za", opts)
--- vim.api.nvim_set_keymap("n", "<C-[>", "zc", opts)
+ vim.api.nvim_set_keymap("n", "<C-]>", "za", opts)
+ vim.api.nvim_set_keymap("n", "<C-[>", "zc", opts)
 
 -- Stay in indent mode
 vim.api.nvim_set_keymap("v", "<", "<gv", opts)
 vim.api.nvim_set_keymap("v", ">", ">gv", opts)
 
 -- visual block comment
--- vim.api.nvim_set_keymap("v", "<leader><leader>c", ":CommentToggle<CR>", opts)
+vim.api.nvim_set_keymap("v", "<leader><leader>c", ":CommentToggle<CR>", opts)
+
+-- split windows like before
+vim.api.nvim_set_keymap("n", "<leader>v", ":vsplit<CR>", opts)
+vim.api.nvim_set_keymap("n", "<leader>h", ":split<CR>", opts)
 
 -- As a side note, some additional keymaps exist in the LSP-setup.lua file
 -- for the language server commands such as gd for go to definition
