@@ -59,14 +59,17 @@ let g:gitgutter_sign_added = '|'
 let g:gitgutter_sign_modified = '|'
 let g:gitgutter_sign_removed = '|'
 let g:gitgutter_sign_modified_removed = '|'
+let g:go_fillstruct_mode = 'gopls'
 au! BufNewFile,BufReadPost *.template.{yaml} set filetype=yaml.cloudformation
 au! BufNewFile,BufReadPost *.template.json set filetype=json.cloudformation
 highlight GitGutterAdd ctermfg=2
 highlight GitGutterChange ctermfg=3
 highlight GitGutterDelete ctermfg=1
 highlight GitGutterChangeDelete ctermfg=4
+autocmd BufWritePre *.go :silent! lua require('go.format').gofmt()
 ]])
 -- iterate through the options and set them
 for key, value in pairs(settings) do
   vim.opt[key] = value
 end
+

@@ -108,6 +108,8 @@ cmp.setup {
     -- { name = "cmp_tabnine" },
     { name = "path" },
     { name = "emoji" },
+    { name = "terraform"},
+  { name = "python"}
   },
   confirm_opts = {
     behavior = cmp.ConfirmBehavior.Replace,
