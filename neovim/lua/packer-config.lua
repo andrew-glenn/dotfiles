@@ -51,7 +51,7 @@ packer.startup(function(use)
 	use({ "wbthomason/packer.nvim" })
 	-- LSP and code navigation
 	-- ------------------------------------
-	use({ "neovim/nvim-lspconfig" }) -- Collection of configurations for the built-in LSP client
+  use({ "neovim/nvim-lspconfig" }) -- Collection of configurations for the built-in LSP client
 	use({ "williamboman/nvim-lsp-installer" })
 	use({ "hrsh7th/cmp-nvim-lsp" })
 	use({ "hrsh7th/cmp-buffer" })
@@ -62,7 +62,14 @@ packer.startup(function(use)
 	use({ "ray-x/lsp_signature.nvim" })
 	use({ "hrsh7th/cmp-nvim-lua" })
 	use({ "folke/lua-dev.nvim" })
-	-- Can't figure out how to make this one work...
+  use({ "ray-x/go.nvim"})
+  use { "rcarriga/nvim-dap-ui", requires = {"mfussenegger/nvim-dap"} }
+  use({"juliosueiras/vim-terraform-completion"})
+  use({"hashivim/vim-terraform"})
+  use({"vim-syntastic/syntastic"})
+  use 'mfussenegger/nvim-dap'
+  use({"fatih/vim-go"})
+  -- Can't figure out how to make this one work...
 	-- use {'jubnzv/virtual-types.nvim', as = "virtual-types"}
 	use({ "j-hui/fidget.nvim" })
 	use({ "L3MON4D3/LuaSnip" })
@@ -72,6 +79,10 @@ packer.startup(function(use)
 	use({ "terrortylor/nvim-comment" })
 	use({ "jose-elias-alvarez/null-ls.nvim" })
   use({ "hashivim/vim-terraform"})
+  use({ "ncm2/ncm2"})
+  use({ "oxma/nvim-yarp"})
+  use({ "ncm2/ncm2-jedi"})
+  use({ "ncm2/ncm2-go"})
 
 	-- Syntax highlighter
 	-- ---------------------
@@ -84,8 +95,10 @@ packer.startup(function(use)
   -- Syntax checkers
   use({"dense-analysis/ale"})
   use({"speshak/vim-cfn"})
-	-- Theme / UI
+  use({"ambv/black"})
+  -- Theme / UI
 	-- -----------------
+  use({"projekt0n/github-nvim-theme"})
   use({"airblade/vim-gitgutter"})
 use {
   'lewis6991/gitsigns.nvim',
@@ -159,3 +172,4 @@ use {
 		require("packer").sync()
 	end
 end)
+

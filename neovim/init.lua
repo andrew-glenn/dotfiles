@@ -52,6 +52,8 @@ if not status_ok then
 end
 nvim_comment.setup()
 
+require('go').setup()
 -- This plugin is shifting the cursor and making it hard to autocomplete to be useful
 -- require"plugins.nvim-lines".register_lsp_virtual_lines()
 
+require('lspconfig').pylsp.setup{}

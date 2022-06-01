@@ -10,7 +10,7 @@
 
 
 --]]
-local colorscheme = "vscode"
+local colorscheme = "github_dark_default"
 
 local status_ok, _ = pcall(vim.cmd, "colorscheme " .. colorscheme)
 if not status_ok then
@@ -26,5 +26,8 @@ vim.g.vscode_style = "dark"
 vim.g.vscode_italic_comment = 1
 -- Disable nvim-tree background color
 vim.g.vscode_disable_nvimtree_bg = true
-vim.cmd[[colorscheme vscode]]
+vim.cmd([[
+  colorscheme github_dark_default
+  highlight Folded guifg=#8b949e guibg=none
+]])
 

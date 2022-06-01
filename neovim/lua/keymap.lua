@@ -10,7 +10,6 @@
 --]]
 local opts = { noremap = true, silent = true }
 vim.api.nvim_set_keymap('n', '<F2>', ':NvimTreeToggle<CR>', opts)
-vim.api.nvim_set_keymap('v', '<C-_>', ':CommentToggle<CR>', opts)
 -- Copy and paste like VS code
 -- vim.api.nvim_set_keymap('n', '<C-x>', 'dd', opts)
 -- vim.api.nvim_set_keymap('n', '<C-v>', 'p', opts)
@@ -68,6 +67,8 @@ vim.api.nvim_set_keymap("v", "<leader><leader>c", ":CommentToggle<CR>", opts)
 -- split windows like before
 vim.api.nvim_set_keymap("n", "<leader>v", ":vsplit<CR>", opts)
 vim.api.nvim_set_keymap("n", "<leader>h", ":split<CR>", opts)
+
+vim.api.nvim_set_keymap("n", "<leader>f", ":GoFillStruct<CR>", opts)
 
 -- As a side note, some additional keymaps exist in the LSP-setup.lua file
 -- for the language server commands such as gd for go to definition
