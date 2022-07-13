@@ -83,7 +83,10 @@ packer.startup(function(use)
   use({ "oxma/nvim-yarp"})
   use({ "ncm2/ncm2-jedi"})
   use({ "ncm2/ncm2-go"})
+  use({'neoclide/coc.nvim', tag = "v0.0.81"})
 
+-- using packer.nvim
+use {'akinsho/bufferline.nvim', tag = "v2.*", requires = 'kyazdani42/nvim-web-devicons'}
 	-- Syntax highlighter
 	-- ---------------------
 	use({ "nvim-treesitter/nvim-treesitter", run = ":TSUpdate" })
@@ -91,6 +94,7 @@ packer.startup(function(use)
   use({'godlygeek/tabular'})
   use({'preservim/vim-markdown'})
   use {"ellisonleao/glow.nvim"}
+  use({'juliosueiras/vim-terraform-completion'})
 
   -- Syntax checkers
   use({"dense-analysis/ale"})
