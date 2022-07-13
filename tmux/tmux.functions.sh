@@ -67,3 +67,11 @@ _toggle_pane_sync(){
    tmux capture-pane -J -S - -E - -b "fpp-$1" -t "$1"
    tmux split-window "tmux show-buffer -b fpp-$1 | fpp || true; tmux delete-buffer -b fpp-$1"
  }
+
+ _toggle_scratch_session() {
+  if [ -n "${TMUX_SCRATCH_SESSION}" ]; then
+    tmux detach -s scratch
+  else
+    tmux new-session -A -e "TMUX_SCRATCH_SESSION=true" -s scratch
+  fi
+ }

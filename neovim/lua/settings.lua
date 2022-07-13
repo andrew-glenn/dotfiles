@@ -60,12 +60,18 @@ let g:gitgutter_sign_modified = '|'
 let g:gitgutter_sign_removed = '|'
 let g:gitgutter_sign_modified_removed = '|'
 let g:go_fillstruct_mode = 'gopls'
+let g:terraform_fmt_on_save=1
+let g:terraform_aligh=1
 au! BufNewFile,BufReadPost *.template.{yaml} set filetype=yaml.cloudformation
 au! BufNewFile,BufReadPost *.template.json set filetype=json.cloudformation
 highlight GitGutterAdd ctermfg=2
 highlight GitGutterChange ctermfg=3
 highlight GitGutterDelete ctermfg=1
 highlight GitGutterChangeDelete ctermfg=4
+let g:syntastic_always_populate_loc_list = 1
+let g:syntastic_auto_loc_list = 1
+let g:syntastic_check_on_open = 1
+let g:syntastic_check_on_wq = 0
 autocmd BufWritePre *.go :silent! lua require('go.format').gofmt()
 ]])
 -- iterate through the options and set them
