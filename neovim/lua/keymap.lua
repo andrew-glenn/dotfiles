@@ -69,6 +69,6 @@ vim.api.nvim_set_keymap("n", "<leader>v", ":vsplit<CR>", opts)
 vim.api.nvim_set_keymap("n", "<leader>h", ":split<CR>", opts)
 
 vim.api.nvim_set_keymap("n", "<leader>f", ":GoFillStruct<CR>", opts)
-
+vim.api.nvim_set_keymap("v", "<C-\\>", ":CommentToggle<CR>", opts)
 -- As a side note, some additional keymaps exist in the LSP-setup.lua file
 -- for the language server commands such as gd for go to definition
