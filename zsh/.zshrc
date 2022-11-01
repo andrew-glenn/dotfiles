@@ -5,6 +5,11 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
+# Determine location of dotfiles repo clone; set env var accordingly
+if [ -L ${HOME}/.tmux.conf ]; then
+  export DOTFILES_GIT_REPO=$(git -C ${$(readlink -f .tmux.conf)%%tmux.conf} rev-parse --show-toplevel)
+fi
+
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 export LESS_TERMCAP_mb=$'\e[1;32m'
@@ -107,54 +112,14 @@ powerlevel9k_PROMPT_ON_NEWLINE=false
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 alias ll="ls -lah"
-alias cleardns="sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder"
-alias ssh="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
-alias mid="sudo plutil -convert xml1 /Library/Managed\ Preferences/andglenn/com.google.Chrome.plist && sudo sed -i -e "\"'4r /Users/andglenn/Documents/chrome.txt'\"" /Library/Managed\ Preferences/andglenn/com.google.Chrome.plist"
-alias hardmid="sudo plutil -convert xml1 /Library/Managed\ Preferences/andglenn/com.google.Chrome.plist && sudo sed -i -e "\"'4r /Users/andglenn/Documents/chromeHard.txt'\"" /Library/Managed\ Preferences/andglenn/com.google.Chrome.plist"
-#alias pip='pip3'
-source /usr/local/bin/virtualenvwrapper.sh
-source $ZSH/oh-my-zsh.sh
-source ~/bin/functions.sh
-#test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
+test -f /usr/local/bin/virtualenvwrapper.sh && source /usr/local/bin/virtualenvwrapper.sh
+test -f ~/bin/functions.sh && source ~/bin/functions.sh
 powerlevel10k_SHORTEN_DIR_LENGTH=2
-#powerlevel9k_SHORTEN_STRATEGY="truncate_middle"
-#powerlevel9k_CONTEXT_DEFAULT_BACKGROUND="000"
-#powerlevel9k_CONTEXT_DEFAULT_FOREGROUND="007"
-#powerlevel9k_DIR_HOME_BACKGROUND="001"
-#powerlevel9k_DIR_HOME_FOREGROUND="000"
-#powerlevel9k_DIR_HOME_SUBFOLDER_BACKGROUND="001"
-#powerlevel9k_DIR_HOME_SUBFOLDER_FOREGROUND="000"
-#powerlevel9k_NODE_VERSION_BACKGROUND="black"
-#powerlevel9k_NODE_VERSION_FOREGROUND="007"
-#powerlevel9k_NODE_VERSION_VISUAL_IDENTIFIER_COLOR="002"
-#powerlevel9k_LOAD_CRITICAL_BACKGROUND="black"
-#powerlevel9k_LOAD_WARNING_BACKGROUND="black"
-#powerlevel9k_LOAD_NORMAL_BACKGROUND="black"
-#powerlevel9k_LOAD_CRITICAL_FOREGROUND="007"
-#powerlevel9k_LOAD_WARNING_FOREGROUND="007"
-#powerlevel9k_LOAD_NORMAL_FOREGROUND="007"
-#powerlevel9k_LOAD_CRITICAL_VISUAL_IDENTIFIER_COLOR="red"
-#powerlevel9k_LOAD_WARNING_VISUAL_IDENTIFIER_COLOR="yellow"
-#powerlevel9k_LOAD_NORMAL_VISUAL_IDENTIFIER_COLOR="green"
-#powerlevel9k_TIME_BACKGROUND="black"
-#powerlevel9k_TIME_FOREGROUND="007"
-#powerlevel9k_TIME_FORMAT="%D{%H:%M} %F{003}\uF017"
-#powerlevel9k_LEFT_PROMPT_ELEMENTS=('context' 'dir' 'vcs')
-#powerlevel9k_LEFT_SEGMENT_SEPARATOR=$'\uE0B0'
-#powerlevel9k_RIGHT_SEGMENT_SEPARATOR=$'\uE0B2'
-#
 powerlevel9k_SHORTEN_DIR_LENGTH=2
 powerlevel9k_LEFT_PROMPT_ELEMENTS=(dir virtualenv vcs)
 powerlevel9k_VIRTUALENV_BACKGROUND='cyan'
-
 VIRTUALENVWRAPPER_PYTHON=/usr/local/bin/python3
 
-# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-[[ -f ~/.p10k.zsh ]] && source ~/.p10k.zsh
-export PATH=$PATH:/usr/local/bin  # MIDWAY PATH: Path changed for ssh
-
-# added by travis gem
-[ -f /Users/andglenn/.travis/travis.sh ] && source /Users/andglenn/.travis/travis.sh
 export PATH=$PATH:/usr/local/bin  # MIDWAY PATH: Path changed for ssh
 
 autoload -U +X bashcompinit && bashcompinit
@@ -164,19 +129,12 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
-# tabtab source for serverless package
-# uninstall by removing these lines or running `tabtab uninstall serverless`
-[[ -f /Users/andglenn/.nvm/versions/node/v6.10.3/lib/node_modules/serverless/node_modules/tabtab/.completions/serverless.zsh ]] && . /Users/andglenn/.nvm/versions/node/v6.10.3/lib/node_modules/serverless/node_modules/tabtab/.completions/serverless.zsh
-# tabtab source for sls package
-# uninstall by removing these lines or running `tabtab uninstall sls`
-[[ -f /Users/andglenn/.nvm/versions/node/v6.10.3/lib/node_modules/serverless/node_modules/tabtab/.completions/sls.zsh ]] && . /Users/andglenn/.nvm/versions/node/v6.10.3/lib/node_modules/serverless/node_modules/tabtab/.completions/sls.zsh
-
-# To customize prompt, run `p10k configure` or edit ~/development/.local/.p10k.zsh.
 [[ ! -f ~/development/.local/.p10k.zsh ]] || source ~/development/.local/.p10k.zsh
-source ~/powerlevel10k/powerlevel10k.zsh-theme
-eval "$(rbenv init -)"
-eval "$(pyenv init -)"
-eval "$(pyenv virtualenv-init -)"
+
+which rbenv && eval "$(rbenv init -)"
+which pyenv && eval "$(pyenv init -)" && eval "$(pyenv virtualenv-init -)"
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+
+alias vim='nvim'
