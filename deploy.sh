@@ -40,6 +40,9 @@ function _download_and_exec_script(){
 }
 
 function homebrew_stuff(){
+  if "$(uname)" == "Linux"; then 
+    return
+  fi
   if [ ! -f /opt/homebrew/bin/brew ]; then 
    _download_and_exec_script  https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh
   fi
