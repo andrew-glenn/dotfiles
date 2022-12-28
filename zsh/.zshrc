@@ -138,3 +138,7 @@ which pyenv && eval "$(pyenv init -)" && eval "$(pyenv virtualenv-init -)"
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
 alias vim='nvim'
+
+if [[ -f ~/.zshrc.local ]]; then 
+  source ~/.zshrc.local
+fi
