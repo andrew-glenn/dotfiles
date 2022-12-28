@@ -4,6 +4,8 @@
   hostname=`hostname`
   if [[ `hostname` =~ dev-dsk ]]; then
     tmux source-file "${HOME}/.tmux-themepack/powerline/block/orange.tmuxtheme"
+  elif [[ `hostname` =~ radioshack ]]; then 
+    tmux source-file "${HOME}/.tmux-themepack/powerline/block/magenta.tmuxtheme"
   else
     tmux source-file "${HOME}/.tmux-themepack/powerline/block/cyan.tmuxtheme"
   fi
