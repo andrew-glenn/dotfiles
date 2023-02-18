@@ -15,6 +15,9 @@ function zsh_stuff(){
 
 function tmux_stuff(){
   _conditionally_create_symlink ${PWD}/tmux/tmux.conf ~/.tmux.conf
+  if [ ! -d ${HOME}/.tmux/plugins/tpm ]; then 
+    git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+  fi
 }
 
 
@@ -40,7 +43,7 @@ function _download_and_exec_script(){
 }
 
 function homebrew_stuff(){
-  if "$(uname)" == "Linux"; then 
+  if `uname` == "Linux"; then 
     return
   fi
   if [ ! -f /opt/homebrew/bin/brew ]; then 
