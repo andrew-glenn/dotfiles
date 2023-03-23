@@ -51,7 +51,7 @@ function homebrew_stuff(){
   fi
   brew tap homebrew/cask-fonts && brew install --cask font-Hack-nerd-font
 }
-
+#
 ssh_stuff
 zsh_stuff
 tmux_stuff
