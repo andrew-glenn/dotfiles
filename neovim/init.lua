@@ -26,7 +26,7 @@ require "lsp"
 require "plugins.cmp"
 require "plugins.lualine"
 -- require "plugins.nvim-tree"
-require "plugins.treesitter"
+--require "plugins.treesitter"
 -- require "plugins.bufferline"
 require "plugins.alpha"
 require "plugins.project"
@@ -37,7 +37,8 @@ require "plugins.indent-blankline"
 -- require "plugins.dressing"
 require "plugins.neorg"
 require "plugins.legendary"
-require('gitsigns').setup()
+--require('gitsigns').setup()
+
 
 -- Here we load plugins which we don't configure
 local status_ok, fidget = pcall(require, "fidget")
