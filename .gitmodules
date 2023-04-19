@@ -1,6 +1,4 @@
 [submodule "zsh/powerlevel10k"]
 	path = zsh/powerlevel10k
 	url = https://github.com/romkatv/powerlevel10k.git
-[submodule "tmux/tmux-themepack"]
-	path = tmux/tmux-themepack
-	url = https://github.com/andrew-glenn/tmux-themepack.git
+
