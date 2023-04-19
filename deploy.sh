@@ -16,7 +16,10 @@ function zsh_stuff(){
 function tmux_stuff(){
   _conditionally_create_symlink ${PWD}/tmux/tmux.conf ~/.tmux.conf
 }
-
+ # jq
+ # bat
+ # delta
+ #
 
 function ssh_stuff(){
   if [ ! -d ~/.ssh/ ]; then
@@ -31,7 +34,7 @@ function _conditionally_create_symlink(){
     ln -s ${1} ${2}
   fi
 }
-
+bra
 function _download_and_exec_script(){
   TF=$(mktemp)
   curl -fsSL ${1} > ${TF}
@@ -40,11 +43,13 @@ function _download_and_exec_script(){
 }
 
 function homebrew_stuff(){
-  if "$(uname)" == "Linux"; then 
+  if [ "$(uname)" == "Linux" ] ; then 
     return
   fi
   if [ ! -f /opt/homebrew/bin/brew ]; then 
    _download_and_exec_script  https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh
+    (echo; echo 'eval "$(/opt/homebrew/bin/brew shellenv)"') >> ${HOME}/.zprofile
+    eval "$(/opt/homebrew/bin/brew shellenv)"
   fi
   brew tap homebrew/cask-fonts && brew install --cask font-Hack-nerd-font
 }

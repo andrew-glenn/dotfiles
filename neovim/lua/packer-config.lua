@@ -104,16 +104,16 @@ use {'akinsho/bufferline.nvim', tag = "v2.*", requires = 'kyazdani42/nvim-web-de
 	-- -----------------
   use({"projekt0n/github-nvim-theme"})
   use({"airblade/vim-gitgutter"})
-use {
-  'lewis6991/gitsigns.nvim',
-  requires = {
-    'nvim-lua/plenary.nvim'
-  },
-  config = function()
-    require('gitsigns').setup()
-  end
+-- use {
+--  'lewis6991/gitsigns.nvim',
+--  requires = {
+--    'nvim-lua/plenary.nvim'
+--  },
+--  config = function()
+--    require('gitsigns').setup()
+--  end
   -- tag = 'release' -- To use the latest release
-}
+--}
   use({ "rafamadriz/neon", as = "neon" })
   use 'Mofiqul/vscode.nvim'
   use 'feline-nvim/feline.nvim'
