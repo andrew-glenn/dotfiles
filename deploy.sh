@@ -15,6 +15,9 @@ function zsh_stuff(){
 
 function tmux_stuff(){
   _conditionally_create_symlink ${PWD}/tmux/tmux.conf ~/.tmux.conf
+  if [ ! -d ${HOME}/.tmux/plugins/tpm ]; then 
+    git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+  fi
 }
  # jq
  # bat
@@ -53,7 +56,7 @@ function homebrew_stuff(){
   fi
   brew tap homebrew/cask-fonts && brew install --cask font-Hack-nerd-font
 }
-
+#
 ssh_stuff
 zsh_stuff
 tmux_stuff
