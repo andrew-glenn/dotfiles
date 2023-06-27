@@ -2,3 +2,6 @@
 	path = zsh/powerlevel10k
 	url = https://github.com/romkatv/powerlevel10k.git
 
+[submodule "tmux/plugins/tmux-menus"]
+	path = tmux/plugins/tmux-menus
+	url = https://github.com/andrew-glenn/tmux-menus.git
