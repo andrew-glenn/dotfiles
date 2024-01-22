@@ -112,9 +112,7 @@ Plug 'speshak/vim-cfn'
 Plug 'jaredgorski/spacecamp'
 Plug 'joshdick/onedark.vim'
 Plug 'sainnhe/sonokai'
-" Vim Script
-Plug 'folke/zen-mode.nvim'
-
+Plug 'ervandew/supertab'
 let g:make = 'gmake'
 if exists('make')
    let g:make = 'make'
@@ -140,6 +138,8 @@ Plug 'nvim-lua/plenary.nvim'
 Plug 'nvim-telescope/telescope.nvim'
 Plug 'nvim-telescope/telescope-fzy-native.nvim'
 Plug 'pedrohdz/vim-yaml-folds'
+Plug 'neoclide/coc.nvim', {'branch': 'release'}
+Plug 'andrew-glenn/gotests-vim'
 call plug#end()
 " Required:
 filetype plugin indent on
@@ -573,8 +573,10 @@ map <leader>w :close <Enter>
 "map <C-W> :q! <Enter>
 map <C-f> /
 
-
 nmap zz zA
+
+" Golang based stuff 
+map <leader>a :GoFillStruct<CR>
 "*****************************************************************************
 "" SYNTAX configs
 "*****************************************************************************
@@ -849,3 +851,5 @@ set encoding=UTF-8
 colorscheme gruvbox
 set colorcolumn=00
 hi Normal guibg=NONE ctermbg=NONE
+
+nmap <leader>K     :call CocAction('jumpDefinition', 'tab drop')<CR>

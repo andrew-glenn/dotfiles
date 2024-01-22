@@ -1,3 +1,4 @@
+#!/usr/bin/env zsh
 if [ "x${SSH_AUTH_SOCK}" == "x" ]; then
 	eval $(gpg-agent --daemon --enable-ssh-support)
     rm ~/.ssh/ssh_auth_sock
