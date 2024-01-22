@@ -63,12 +63,23 @@ packer.startup(function(use)
 	use({ "hrsh7th/cmp-nvim-lua" })
 	use({ "folke/lua-dev.nvim" })
   use({ "ray-x/go.nvim"})
+  use(
+    { 
+      "dreamsofcode-io/nvim-dap-go",
+      ft = "go", 
+      dependencies = "mfussenegger/nvim-dap",
+      config = function(_, opts)
+        require("dap-go").setup(opts)
+      end
+    }
+    )
   use { "rcarriga/nvim-dap-ui", requires = {"mfussenegger/nvim-dap"} }
   use({"juliosueiras/vim-terraform-completion"})
   use({"hashivim/vim-terraform"})
   use({"vim-syntastic/syntastic"})
   use 'mfussenegger/nvim-dap'
   use({"fatih/vim-go"})
+  use({"jodosha/vim-godebug"})
   -- Can't figure out how to make this one work...
 	-- use {'jubnzv/virtual-types.nvim', as = "virtual-types"}
 	use({ "j-hui/fidget.nvim" })
