@@ -61,7 +61,7 @@ packer.startup(function(use)
 	use({ "hrsh7th/nvim-cmp" })
 	use({ "ray-x/lsp_signature.nvim" })
 	use({ "hrsh7th/cmp-nvim-lua" })
-	use({ "folke/lua-dev.nvim" })
+	use({ "folke/neodev.nvim" })
   use({ "ray-x/go.nvim"})
   use(
     { 
@@ -100,7 +100,6 @@ packer.startup(function(use)
 use {'akinsho/bufferline.nvim', tag = "v2.*", requires = 'kyazdani42/nvim-web-devicons'}
 	-- Syntax highlighter
 	-- ---------------------
-	use({ "nvim-treesitter/nvim-treesitter", run = ":TSUpdate" })
 	use({ "romgrk/nvim-treesitter-context" })
   use({'godlygeek/tabular'})
   use({'preservim/vim-markdown'})
@@ -156,15 +155,6 @@ use {'akinsho/bufferline.nvim', tag = "v2.*", requires = 'kyazdani42/nvim-web-de
 	use({ "lukas-reineke/indent-blankline.nvim" })
 	use({ "stevearc/dressing.nvim" })
 
-	-- Terminal emulator
-	-- ---------------------
-	use({ "akinsho/toggleterm.nvim" })
-
-	-- Note Taking
-	use({
-		"nvim-neorg/neorg",
-		requires = "nvim-lua/plenary.nvim",
-	})
 
 	-- Search tools
 	-- --------------
