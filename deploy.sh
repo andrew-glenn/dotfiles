@@ -37,7 +37,6 @@ function _conditionally_create_symlink(){
     ln -s ${1} ${2}
   fi
 }
-bra
 function _download_and_exec_script(){
   TF=$(mktemp)
   curl -fsSL ${1} > ${TF}
@@ -57,7 +56,7 @@ function homebrew_stuff(){
   brew tap homebrew/cask-fonts && brew install --cask font-Hack-nerd-font
 }
 #
+homebrew_stuff
 ssh_stuff
 zsh_stuff
 tmux_stuff
-homebrew_stuff
