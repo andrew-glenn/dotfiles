@@ -40,8 +40,8 @@
 
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
-
-
+(global-set-key (kbd "<mouse-4>") 'scroll-down-line)
+(global-set-key (kbd "<mouse-5>") 'scroll-up-line)
 ;; Whenever you reconfigure a package, make sure to wrap your config in an
 ;; `after!' block, otherwise Doom's defaults may override your settings. E.g.
 ;;
@@ -256,4 +256,6 @@
 ;   (setq company-go-show-annotation t))
 ;
 ;
-
+;; Recommended keymap prefix on macOS
+;(projectile-mode +1)
+;;(define-key projectile-mode-map (kbd "s-p") 'projectile-command-map)
