@@ -14,7 +14,7 @@ fi
 
 # Determine location of dotfiles repo clone; set env var accordingly
 if [ -L ${HOME}/.tmux.conf ]; then
-  export DOTFILES_GIT_REPO=$(git -C ${$(readlink -f .tmux.conf)%%tmux.conf} rev-parse --show-toplevel)
+  export DOTFILES_GIT_REPO=$(git -C ${$(readlink -f ${HOME}/.tmux.conf)%%tmux.conf} rev-parse --show-toplevel)
 fi
 
 if [[ -f ${HOME}/.local/bin/mise ]]; then 
