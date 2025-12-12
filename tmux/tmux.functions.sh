@@ -27,14 +27,7 @@ _old_new_status() {
       _tmux_additional_flags=$OPTARG
       ;;
     "w")
-      if [ "${_tmux_command_options}a" = "a" ]; then
-        _tmux_command_options="show-window-option -gv"
-      fi
-      if [ "${_tmux_additional_flags}a" != "a" ]; then
-        _old=$(tmux "${_tmux_command_options}" -"${_tmux_additional_flags}" "${OPTARG}")
-      else
-        _old=$(tmux "${_tmux_command_options}" "${OPTARG}")
-      fi
+      _current=$(tmux show-window-options -v "${OPTARG}")
       ;;
     esac
   done
@@ -50,7 +43,7 @@ _old_new_status() {
   esac
   onsv=$new
   export onsv
-  unset _old _tmux_command_options opt
+  unset _tmux_command_options _current _default _new _tmux_command_options _tmux_additional_flags
 }
 _toggle_mouse() {
   _old_new_status -g "mouse" -d "on" -n "off"
@@ -65,8 +58,13 @@ _toggle_pane_sync() {
 }
 
 _toggle_prefix() {
-  _old_new_status -g "prefix" -d "C-b" -n "None"
-  tmux set -qw prefix "${onsv}"
+  _old_new_status -w "prefix" -d "C-b" -n "None"
+  if [[ "${onsv}" == "None" ]]; then
+    tmux setw -q status off
+  else
+    tmux setw -q status on
+  fi
+  tmux setw -q prefix "${onsv}"
 }
 
 _urlview() {
