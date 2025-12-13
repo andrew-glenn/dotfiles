@@ -1,7 +1,7 @@
-if [ "x${SSH_AUTH_SOCK}" == "x" ]; then
-	eval $(gpg-agent --daemon --enable-ssh-support)
-    rm ~/.ssh/ssh_auth_sock
+#!/usr/bin/zsh
+if [ ! -z "${SSH_AUTH_SOCK}" ]; then 
+	if [ -L ~/.ssh/ssh_auth_sock ]; then
+		rm ~/.ssh/ssh_auth_sock
+	fi
+	ln -s ${SSH_AUTH_SOCK} ~/.ssh/ssh_auth_sock
 fi
-
-
-ln -s ${SSH_AUTH_SOCK} ~/.ssh/ssh_auth_sock
