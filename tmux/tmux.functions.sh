@@ -1,3 +1,4 @@
+#!/usr/bin/env zsh
 _host_specific_theme() {
   hostname=$(hostname)
   if [[ $(hostname) =~ dev-dsk ]]; then
@@ -34,7 +35,7 @@ _old_new_status() {
   shift $((OPTIND - 1))
   new=""
   case "${_current}" in
-  "${_default}")
+  "${_default}" || "")
     new="${_new}"
     ;;
   "${_new}")
@@ -90,3 +91,15 @@ _conditional_new_window() {
     tmux new-window
   fi
 }
+
+set -x
+case "${1}" in 
+  "prefix")
+    _toggle_prefix
+    ;;
+  *)
+    exit 1
+    ;;
+esac
+set +x
+
