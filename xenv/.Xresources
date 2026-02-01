@@ -1,0 +1,111 @@
+
+xterm*foreground:  #ffe9fc
+xterm*background:  #150014
+xterm*cursorColor: #ff82f6
+
+
+xterm*color0: #150014
+xterm*color1: #d97780
+xterm*color2: #7aa860
+xterm*color3: #bc904f
+xterm*color4: #6b9bd9
+xterm*color5: #b77ed1
+xterm*color6: #52a9a9
+xterm*color7: #ff82f6
+xterm*color8: #880084
+xterm*color9: #e6949a
+xterm*color10: #8ebf73
+urxvt.background: #000000
+urxvt.foreground: #CDD6F4
+urxvt.cursorColor: #F5E0DC
+! black
+urxvt.color0: #45475A
+urxvt.color8: #585B70
+
+! red
+urxvt.color1: #F38BA8
+urxvt.color9: #F38BA8
+
+! green
+urxvt.color2: #A6E3A1
+urxvt.color10: #A6E3A1
+
+! yellow
+urxvt.color3: #F9E2AF
+urxvt.color11: #F9E2AF
+
+! blue
+urxvt.color4: #89B4FA
+urxvt.color12: #89B4FA
+
+! magenta
+urxvt.color5: #F5C2E7
+urxvt.color13: #F5C2E7
+
+! cyan
+urxvt.color6: #94E2D5
+urxvt.color14: #94E2D5
+
+! white
+urxvt.color7: #BAC2DE
+urxvt.color15: #A6ADC8
+
+!! rxvt Appearance
+urxvt.letterSpace: 0
+urxvt.lineSpace: 0
+urxvt.geometry: 92x24
+urxvt.internalBorder: 24
+urxvt.cursorBlink: true
+urxvt.cursorUnderline: false
+urxvt.saveline: 2048
+urxvt.scrollBar: false
+urxvt.scrollBar_right: false
+urxvt.urgentOnBell: true
+! urxvt.depth: 24
+urxvt.inheritPixmap: true
+! rxvt*shading: 0 to 99 darkens, 101 to 200 lightens
+urxvt.iso14755: false
+xterm*selectToClipboard: true
+
+
+URxvt.transparent: true
+
+URxvt.shading: 15
+
+URxvt.blurRadius: 0
+
+URxvt.background: #d3d3d3
+
+URxvt.foreground: #1d1f21 
+urxvt.perl-ext-common: default,matcher,-confirm-paste,selection-to-clipboard,pasta,keyboard-select
+!rxvt.font: xft:Hack Nerd Font:style=Regular:size=14
+URxvt.perl-ext:           default,matcher 
+URxvt.matcher.button:     1 
+URxvt.matcher.pattern.1:  \\bwww\\.[\\w-]+\\.[\\w./?&@#-]*[\\w/-]
+urxvt.keysym.C-minus:     resize-font:smaller
+urxvt.keysym.C-plus:      resize-font:bigger
+urxvt.keysym.C-equal:     resize-font:reset
+urxvt.keysym.C-question:  resize-font:show
+urxvt*depth: 32
+urxvt*background: [80]#050003
+
+urxvt.font: xft:Hack Nerd Font:size=14:style=Bold, \
+  xft:Comic Mono:style=Bold:antialias=true:size=14:minspace=False, \
+  xft:UbuntuMono Nerd Font Mono:style=Regular:antialias=true:size=14:minspace=False, \
+  xft:SauceCodePro Nerd Font:style=Medium:antialias=true:size=14:minspace=False, \
+  xft:DejaVuSansMono Nerd Font:antialias=true:size=14:minspace=False, \
+  xft:DroidSansMono Nerd Font Mono:antialias=true:size=14, \
+  xft:FuraMono NF:size=14:antialias=true:minspace=False, \
+  xft:RobotoMono Nerd Font:antialias=true:size=14:minspace=False, \
+  xft:Noto Sans Mono:antialias=true:size=14:minspace=False, \
+  xft:Monospace:style=Medium:antialias=true:minspace=False
+
+
+URxvt.keysym.M-u:     perl:url-select:select_next
+URxvt.url-launcher:   /usr/bin/firefox
+URxvt.underlineURLs:  True
+URxvt.keysym.M-Escape:perl:keyboard-select:activate
+URxvt.keysym.Control-Shift-V:     perl:pasta:paste
+! The following configuration will automatically update the CLIPBOARD when the PRIMARY selection changes
+! This is deprecated since Control-Alt-C/V has been implemented since 9.20 
+URxvt.clipboard.autocopy: true
