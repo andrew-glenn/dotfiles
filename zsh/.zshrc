@@ -12,6 +12,14 @@ function exec_if_exists(){
   [[ -f ${1} ]] && ${1}
 }
 
+function pyenv_if_exists(){
+  [[ -d "${HOME}/.pyenv" ]] || return 
+  export PYENV_ROOT="$HOME/.pyenv"
+  export PATH="$PYENV_ROOT/bin:$PATH"
+  eval "$(pyenv init --path)"
+  eval "$(pyenv init -)"
+}
+
 # Termcap stuff
 export LESS_TERMCAP_mb=$'\e[1;32m'
 export LESS_TERMCAP_md=$'\e[1;32m'
@@ -35,6 +43,7 @@ powerlevel10k_SHORTEN_DIR_LENGTH=2
 # PATH updates, if path exists. 
 update_path_if_exists /opt/homebrew/bin
 update_path_if_exists /usr/local/bin
+update_path_if_exists /opt/homebrew/opt/gnu-sed/libexec/gnubin
 update_path_if_exists ${HOME}/Library/Python3.7/bin
 update_path_if_exists ${HOME}/bin
 update_path_if_exists ${HOME}/.cargo/bin
@@ -43,15 +52,15 @@ update_path_if_exists ${HOME}/.toolbox/bin
 
 # Source these files if they exists. 
 source_if_exists ${HOME}/.oh-my-zsh/oh-my-zsh.sh
+source_if_exists ${HOME}/.p10k.zsh
 source_if_exists ${HOME}/bin/functions.sh
 source_if_exists ${HOME}/.zshrc.local
-source_if_exists ${HOME}/.p10k.zsh
-
-# Non-standard source logic. 
-[[ -f ${HOME}/.local/bin/mise ]] &&  source ${DOTFILES_GIT_REPO}/zsh/mise-include.zsh
 
 # Niche conditional vars. 
 [[ -L ${HOME}/.tmux.conf ]] && export DOTFILES_GIT_REPO=$(git -C ${$(readlink -f ${HOME}/.tmux.conf)%%tmux.conf} rev-parse --show-toplevel)
+
+# Non-standard source logic. 
+[[ -f ${HOME}/.local/bin/mise && ! -z ${DOTFILES_GIT_REPO} ]] &&  source ${DOTFILES_GIT_REPO}/zsh/mise-include.zsh
 
 # Execute these scripts if they exist. 
 exec_if_exists ${HOME}/bin/configure-ssh-agent.sh
@@ -62,3 +71,5 @@ alias kcc="kiro-cli-chat"
 
 # hooks
 eval "$(direnv hook zsh)"
+
+pyenv_if_exists
