@@ -52,6 +52,20 @@ volumes=(
 # Forward SSH keys for git operations (read-only)
 [ -d "${HOME}/.ssh" ] && volumes+=(-v "${HOME}/.ssh":"${container_home}/.ssh":ro)
 
+# Persist common dev caches across runs
+_mount_cache() {
+  local host_dir="${1:?}" container_dir="${2:?}"
+  if [ -d "${host_dir}" ]; then
+    volumes+=(-v "${host_dir}":"${container_dir}")
+  fi
+}
+_mount_cache "${HOME}/.cache/go-build"  "${container_home}/.cache/go-build"
+_mount_cache "${HOME}/go"               "${container_home}/go"
+_mount_cache "${HOME}/.npm"             "${container_home}/.npm"
+_mount_cache "${HOME}/.cache/pip"       "${container_home}/.cache/pip"
+_mount_cache "${HOME}/.cargo"           "${container_home}/.cargo"
+_mount_cache "${HOME}/.cache/yarn"      "${container_home}/.cache/yarn"
+
 env_vars=()
 
 # Forward API key — check common env var names
@@ -75,7 +89,7 @@ exec docker run --rm ${tty_flag} \
   --name "${container_name}" \
   --user "$(id -u):$(id -g)" \
   "${volumes[@]}" \
-  "${env_vars[@]}" \
+  ${env_vars[@]+"${env_vars[@]}"} \
   -e HOME="${container_home}" \
   -e TERM="${TERM:-xterm-256color}" \
   -w /workspace \
