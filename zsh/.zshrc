@@ -1,6 +1,6 @@
 # helper functions
 function update_path_if_exists(){
-  echo "${PATH}" | grep -q -i "${1}" && return 
+  [[ ":${PATH}:" == *":${1}:"* ]] && return
   [[ -d ${1} ]] && export PATH="${PATH}:${1}"
 }
 
@@ -97,6 +97,9 @@ update_path_if_exists ${HOME}/bin
 update_path_if_exists ${HOME}/.cargo/bin
 update_path_if_exists ${HOME}/.local/bin
 update_path_if_exists ${HOME}/.toolbox/bin
+for dir in ${HOME}/dev/me/*/bin; do
+  update_path_if_exists ${dir}
+done
 
 # Source these files if they exists. 
 source_if_exists ${HOME}/.oh-my-zsh/oh-my-zsh.sh
@@ -113,6 +116,8 @@ source_if_exists ${HOME}/.zshrc.local
 # Execute these scripts if they exist. 
 exec_if_exists ${HOME}/bin/configure-ssh-agent.sh
 
+# conditional alias
+[[ -f ${DOTFILES_GIT_REPO}/scripts/claude-sandbox.sh ]] && alias claude="${DOTFILES_GIT_REPO}/scripts/claude-sandbox.sh"
 # aliases
 alias ll="ls -lah"
 # hooks
