@@ -93,4 +93,4 @@ exec docker run --rm ${tty_flag} \
   -e HOME="${container_home}" \
   -e TERM="${TERM:-xterm-256color}" \
   -w /workspace \
-  "${IMAGE}" "$@"
+  "${IMAGE}" --dangerously-skip-permissions "$@"
