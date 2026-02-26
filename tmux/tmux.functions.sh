@@ -1,13 +1,15 @@
 #!/usr/bin/env zsh
 _host_specific_theme() {
-  hostname=$(hostname)
-  if [[ $(hostname) =~ dev-dsk ]]; then
-    tmux source-file "${HOME}/.tmux-themepack/powerline/block/orange.tmuxtheme"
-  elif [[ $(hostname) =~ radioshack ]]; then
-    tmux source-file "${HOME}/.tmux-themepack/powerline/block/magenta.tmuxtheme"
+  set -x
+  local repo="${DOTFILES_GIT_REPO:-$HOME/dotfiles}"
+  if [[ $(hostname) == *dev-dsk* ]]; then
+    tmux source-file "${repo}/tmux/tmux-themepack/powerline/block/yellow.tmuxtheme"
+  elif [[ $(hostname) == *radioshack* ]]; then
+    tmux source-file "${repo}/tmux/tmux-themepack/powerline/block/magenta.tmuxtheme"
   else
-    tmux source-file "${DOTFILES_GIT_REPO}/tmux/.tmux-themepack/powerline/block/red.tmuxtheme"
+    tmux source-file "${repo}/tmux/tmux-themepack/powerline/block/red.tmuxtheme"
   fi
+  set +x
 }
 _old_new_status() {
   while getopts 'x:X:w:g:d:n:' opt "$@"; do
@@ -175,6 +177,16 @@ _send_pane() {
   return 0
 }
 
+_toggle_silence() {
+  local cur
+  cur=$(tmux show-window-options -v monitor-silence 2>/dev/null)
+  if [ "${cur}" -gt 0 ] 2>/dev/null; then
+    tmux set-window-option monitor-silence 0 \; display "Monitor Silence: [off]"
+  else
+    tmux set-window-option monitor-silence 10 \; display "Monitor Silence: [on – 10s]"
+  fi
+}
+
 # ---
 
 case "${1}" in
@@ -183,6 +195,12 @@ case "${1}" in
     ;;
   "send_pane")
     _send_pane "${2}"
+    ;;
+  "silence")
+    _toggle_silence
+    ;;
+  "theme")
+    _host_specific_theme
     ;;
   *)
     exit 1

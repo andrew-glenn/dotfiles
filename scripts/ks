@@ -1,0 +1,265 @@
+#!/usr/bin/env bash
+# Run kiro-cli interactively inside a Docker container.
+# Usage: kiro-sandbox.sh [--aws] [-d DIR] [-o DIR] [- kiro-cli args...]
+
+[[ "${DEBUG}" == "true" ]] && set -x
+set -euo pipefail
+
+SCRIPT_NAME="$(basename "$0")"
+IMAGE="kiro-sandbox"
+CONTAINER_PREFIX="kiro-sandbox"
+
+_ensure_image() {
+  local dockerfile="${1:?}"
+  if ! docker image inspect "${IMAGE}" &>/dev/null; then
+    echo "Building ${IMAGE} image..."
+    docker build -f "${dockerfile}" -t "${IMAGE}" "$(dirname "${dockerfile}")"
+  fi
+}
+
+_container_name() {
+  local dir="${1:?}"
+  local base
+  base="$(basename "${dir}")"
+  echo "${CONTAINER_PREFIX}-${base//[^a-zA-Z0-9]/-}-$$"
+}
+
+_setup_base_volumes() {
+  local kiro_cli_real kiro_cli_chat_real
+  kiro_cli_real="$(readlink -f "$(which kiro-cli)")"
+  kiro_cli_chat_real="$(readlink -f "$(which kiro-cli-chat)")"
+
+  volumes=(
+    -v "${project_dir}":/workspace
+    -v "${HOME}/.kiro":"${container_home}/.kiro"
+    -v "${HOME}/.local/share/kiro-cli":"/custom/xdg-data/kiro-cli"
+    -v "/run/user/$(id -u)/kiro-clilog":"/run/user/$(id -u)/kiro-clilog"
+    -v "${kiro_cli_real}":"${container_home}/.local/bin/kiro-cli":ro
+    -v "${kiro_cli_chat_real}":"${container_home}/.local/bin/kiro-cli-chat":ro
+  )
+
+  [ -f "${HOME}/.gitconfig" ] && volumes+=(-v "${HOME}/.gitconfig":"${container_home}/.gitconfig":ro)
+  [ -d "${HOME}/.config/git" ] && volumes+=(-v "${HOME}/.config/git":"${container_home}/.config/git":ro)
+  [ -d "${HOME}/.ssh" ] && volumes+=(-v "${HOME}/.ssh":"${container_home}/.ssh":ro)
+  [ -n "$(go env GOROOT)" ] && volumes+=(-v "$(go env GOROOT):$(go env GOROOT)")
+}
+
+# Parse flags
+forward_aws=false
+no_mcp=false
+no_bin=false
+data_dirs=()
+output_dir=""
+kiro_args=()
+while [ $# -gt 0 ]; do
+  case "$1" in
+  -h | --help)
+    cat <<EOF
+Usage: ${SCRIPT_NAME} [OPTIONS] [- kiro-cli args...]
+
+Run kiro-cli interactively inside a Docker container.
+
+OPTIONS:
+  --aws                   Forward AWS credentials to container
+  --no-mcp                Skip mounting MCP servers
+  --no-bin                Skip mounting additional binaries from KS_ADDITIONAL_BIN
+  -d, --data DIR[,DIR...] Mount data directory/directories to /data in container (comma-separated)
+  -o, --output DIR        Mount output directory to /output in container
+  -h, --help              Show this help message
+  -                       Pass remaining arguments to kiro-cli
+
+EXAMPLES:
+  ${SCRIPT_NAME}
+  ${SCRIPT_NAME} --aws
+  ${SCRIPT_NAME} -d /path/to/data
+  ${SCRIPT_NAME} -d /path/to/data1,/path/to/data2
+  ${SCRIPT_NAME} - --help
+  ${SCRIPT_NAME} --aws - chat --model claude-3-5-sonnet
+EOF
+    exit 0
+    ;;
+  --aws)
+    forward_aws=true
+    shift
+    ;;
+  --no-mcp)
+    no_mcp=true
+    shift
+    ;;
+  --no-bin)
+    no_bin=true
+    shift
+    ;;
+  -d | --data)
+    IFS=',' read -ra paths <<<"$2"
+    data_dirs+=("${paths[@]}")
+    shift 2
+    ;;
+  -o | --output)
+    output_dir="$2"
+    shift 2
+    ;;
+  -)
+    shift
+    kiro_args=("$@")
+    break
+    ;;
+  *)
+    echo "Unknown option: $1" >&2
+    exit 1
+    ;;
+  esac
+done
+
+project_dir="$(pwd)"
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Resolve kiro-cli binary path
+kiro_cli_path="$(which kiro-cli 2>/dev/null || true)"
+if [ -n "$kiro_cli_path" ] && [ -L "$kiro_cli_path" ]; then
+  kiro_cli_real="$(readlink -f "$kiro_cli_path")"
+  kiro_cli_dir="$(dirname "$kiro_cli_real")"
+fi
+
+# Show help if no options provided at all
+if [ ${#kiro_args[@]} -eq 0 ] && [ ${#data_dirs[@]} -eq 0 ] && [ -z "$output_dir" ] && [ "$forward_aws" = false ] && [ "$no_mcp" = false ] && [ "$no_bin" = false ]; then
+  cat <<EOF
+Usage: ${SCRIPT_NAME} [OPTIONS] [- kiro-cli args...]
+
+Run kiro-cli interactively inside a Docker container.
+
+OPTIONS:
+  --aws                   Forward AWS credentials to container
+  --no-mcp                Skip mounting MCP servers
+  --no-bin                Skip mounting additional binaries from KS_ADDITIONAL_BIN
+  -d, --data DIR[,DIR...] Mount data directory/directories to /data in container (comma-separated)
+  -o, --output DIR        Mount output directory to /output in container
+  -h, --help              Show this help message
+  -                       Pass remaining arguments to kiro-cli
+
+EXAMPLES:
+  ${SCRIPT_NAME}
+  ${SCRIPT_NAME} --aws
+  ${SCRIPT_NAME} -d /path/to/data
+  ${SCRIPT_NAME} -d /path/to/data1,/path/to/data2
+  ${SCRIPT_NAME} - --help
+  ${SCRIPT_NAME} --aws - chat --model claude-3-5-sonnet
+EOF
+  exit 0
+fi
+
+# Default to chat if options provided but no kiro args
+if [ ${#kiro_args[@]} -eq 0 ]; then
+  kiro_args=("chat")
+fi
+
+_ensure_image "${repo_root}/Dockerfile.kiro"
+
+container_name="$(_container_name "${project_dir}")"
+container_home="/home/sandboxuser"
+# Mount database to root-level path to bypass home directory permission issues (700)
+# kiro-cli uses XDG_DATA_HOME to locate database at $XDG_DATA_HOME/kiro-cli/data.sqlite3
+container_data="/custom/xdg-data"
+
+_setup_base_volumes
+
+# Mount MCP server paths from config
+mcp_bin_dirs=()
+if [ "$no_mcp" = false ] && [ -f "${HOME}/.kiro/settings/mcp.json" ]; then
+  while IFS= read -r mcp_path; do
+    if [ -n "$mcp_path" ] && [ -e "$mcp_path" ]; then
+      if [ -L "$mcp_path" ]; then
+        mcp_real="$(readlink -f "$mcp_path")"
+        [ -e "$mcp_real" ] && volumes+=(-v "${mcp_real}":"${mcp_path}":ro)
+      else
+        volumes+=(-v "${mcp_path}":"${mcp_path}":ro)
+      fi
+      mcp_bin_dirs+=("$(dirname "$mcp_path")")
+    fi
+  done < <(grep -oP '(?<="command":\s")[^"]+' "${HOME}/.kiro/settings/mcp.json" 2>/dev/null || true)
+fi
+
+# Mount additional volumes from KS_ADDITIONAL_VOLUME_MOUNTS
+if [ -n "${KS_ADDITIONAL_VOLUME_MOUNTS:-}" ]; then
+  IFS=':' read -ra mount_paths <<<"$KS_ADDITIONAL_VOLUME_MOUNTS"
+  for mount_path in "${mount_paths[@]}"; do
+    if [ -e "$mount_path" ]; then
+      if [[ "$mount_path" == "${HOME}"* ]]; then
+        container_path="${container_home}${mount_path#${HOME}}"
+        volumes+=(-v "${mount_path}":"${container_path}":ro)
+      else
+        volumes+=(-v "${mount_path}":"${mount_path}":ro)
+      fi
+    fi
+  done
+fi
+
+# Mount additional binaries from KS_ADDITIONAL_BIN
+if [ "$no_bin" = false ] && [ -n "${KS_ADDITIONAL_BIN:-}" ]; then
+  IFS=':' read -ra bin_paths <<<"$KS_ADDITIONAL_BIN"
+  for bin_path in "${bin_paths[@]}"; do
+    if [ -L "$bin_path" ]; then
+      bin_real="$(readlink -f "$bin_path")"
+      if [ -e "$bin_real" ]; then
+        if [[ "$bin_path" == "${HOME}"* ]]; then
+          container_path="${container_home}${bin_path#${HOME}}"
+          volumes+=(-v "${bin_real}":"${container_path}":ro)
+        else
+          volumes+=(-v "${bin_real}":"${bin_path}":ro)
+        fi
+      fi
+    elif [ -e "$bin_path" ]; then
+      if [[ "$bin_path" == "${HOME}"* ]]; then
+        container_path="${container_home}${bin_path#${HOME}}"
+        volumes+=(-v "${bin_path}":"${container_path}":ro)
+      else
+        volumes+=(-v "${bin_path}":"${bin_path}":ro)
+      fi
+    fi
+  done
+fi
+
+if [ ${#data_dirs[@]} -gt 0 ]; then
+  for data_dir in "${data_dirs[@]}"; do
+    volumes+=(-v "${data_dir}":/data/"$(basename "${data_dir}")":ro)
+  done
+fi
+
+[ -n "${output_dir}" ] && volumes+=(-v "${output_dir}":/output)
+
+env_vars=()
+
+if [ "$forward_aws" = true ]; then
+  env_vars+=(
+    -e AWS_ACCESS_KEY_ID
+    -e AWS_SECRET_ACCESS_KEY
+    -e AWS_SESSION_TOKEN
+    -e AWS_REGION
+  )
+fi
+
+[ -t 0 ] && tty_flag="-it" || tty_flag="-i"
+
+# Build PATH with MCP binary directories
+container_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+if [ ${#mcp_bin_dirs[@]} -gt 0 ]; then
+  mcp_path="$(printf ":%s" "${mcp_bin_dirs[@]}" | cut -c2-)"
+  container_path="${mcp_path}:${container_path}"
+fi
+
+# Point kiro-cli to custom data location via XDG_DATA_HOME
+exec docker run --rm ${tty_flag} \
+  --name "${container_name}" \
+  "${volumes[@]}" \
+  ${env_vars[@]+"${env_vars[@]}"} \
+  -e UID="$(id -u)" \
+  -e GID="$(id -g)" \
+  -e HOME="${container_home}" \
+  -e XDG_DATA_HOME="${container_data}" \
+  -e TERM="${TERM:-xterm-256color}" \
+  -e PATH="${container_path}" \
+  -e GOROOT=/usr/local/go \
+  -w /workspace \
+  "${IMAGE}" \
+  ${container_home}/.local/bin/kiro-cli "${kiro_args[@]}"
+[[ "${DEBUG}" == "true" ]] && set +x
