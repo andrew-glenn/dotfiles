@@ -1,0 +1,32 @@
+FROM golang:1.26.0-trixie as backend
+WORKDIR /workspace 
+
+FROM debian:trixie-slim
+ARG SANDBOX_USER_UID=1000
+ARG SANDBOX_USER_GID=1000
+ENV SANDBOX_USER_GID=${SANDBOX_USER_UID}
+ENV SANDBOX_USER_GID=${SANDBOX_USER_GID}
+
+run groupadd -g "${SANDBOX_USER_GID}" sandboxuser 2>/dev/null && \
+    useradd -u "${SANDBOX_USER_UID}" -g "${SANDBOX_USER_GID}" -M -s /bin/bash sandboxuser 2>/dev/null && \
+    mkdir -p /home/sandboxuser && \
+    touch /home/sandboxuser/.bashrc /home/sandboxuser/.profile && \
+    echo 'export PATH="${HOME}/.local/bin:${PATH}"' >> /home/sandboxuser/.bashrc && \
+    chown -R sandboxuser: /home/sandboxuser 2>/dev/null 
+
+
+RUN apt-get update && apt-get install -y \
+    git \
+    ca-certificates \
+    gosu \
+    && rm -rf /var/lib/apt/lists/*
+
+
+RUN mkdir -p /custom && chmod 777 /custom
+
+COPY ks-container-entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+WORKDIR /workspace
+
+ENTRYPOINT ["/entrypoint.sh"]
