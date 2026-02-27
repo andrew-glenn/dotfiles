@@ -20,6 +20,41 @@ function pyenv_if_exists(){
   eval "$(pyenv init -)"
 }
 
+function tn() {
+  local detach=true
+  local cmd=""
+  local name="$1"; shift
+
+  while [[ "$1" == -* ]]; do
+    case "$1" in
+      -d) detach=false; shift ;;
+      -c) shift; cmd="$1"; shift ;;
+      *) shift ;;
+    esac
+  done
+
+  local orig=""
+  if [[ -n "$TMUX" ]]; then
+    orig="$(tmux display-message -p '#S')"
+  fi
+
+  if [[ -n "$cmd" ]]; then
+    local wrapped="$cmd"
+    if [[ -n "$orig" ]]; then
+      wrapped="$cmd; tmux switch-client -t $orig; tmux kill-session -t $name"
+    fi
+    tmux new-session -d -s "$name" "SKIP_OMZ=1 zsh -ic '${wrapped}'"
+  else
+    tmux new-session -d -s "$name"
+  fi
+
+  if [[ -n "$TMUX" ]]; then
+    tmux switch-client -t "$name"
+  elif $detach; then
+    tmux attach-session -t "$name"
+  fi
+}
+
 # Termcap stuff
 export LESS_TERMCAP_mb=$'\e[1;32m'
 export LESS_TERMCAP_md=$'\e[1;32m'
