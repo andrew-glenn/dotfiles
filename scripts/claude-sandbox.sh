@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Run Claude Code interactively inside a Docker container.
-# Same experience as local claude, just isolated.
+# If inside tmux, prompts for a window name first.
 # Usage: claude-sandbox.sh [claude args...]
 
 set -euo pipefail
@@ -8,7 +8,20 @@ set -euo pipefail
 IMAGE="claude-sandbox"
 CONTAINER_PREFIX="claude-sandbox"
 
-# ---
+# --- tmux helpers
+
+_ask_window_name() {
+  local name
+  read -rp "Window name: " name </dev/tty
+  printf '%s' "${name}"
+}
+
+_rename_window() {
+  local name="${1:?Usage: _rename_window <name>}"
+  tmux rename-window "${name}"
+}
+
+# --- sandbox helpers
 
 _ensure_image() {
   local dockerfile="${1:?}"
@@ -25,7 +38,22 @@ _container_name() {
   echo "${CONTAINER_PREFIX}-${base//[^a-zA-Z0-9]/-}-$$"
 }
 
-# ---
+_mount_cache() {
+  local host_dir="${1:?}" container_dir="${2:?}"
+  if [ -d "${host_dir}" ]; then
+    volumes+=(-v "${host_dir}":"${container_dir}")
+  fi
+}
+
+# --- main
+
+if [ -n "${TMUX:-}" ]; then
+  window_name=$(_ask_window_name)
+  if [ -n "${window_name}" ]; then
+    _rename_window "${window_name}"
+  fi
+fi
+
 
 project_dir="$(pwd)"
 repo_root="$(cd /home/ag/dev/me/claude-docker-sandbox && pwd)"
@@ -34,7 +62,6 @@ _ensure_image "${repo_root}/Dockerfile.agent"
 
 container_name="$(_container_name "${project_dir}")"
 
-# Map volumes to a home dir that matches the local UID
 container_home="/home/sandboxuser"
 
 volumes=(
@@ -53,12 +80,6 @@ volumes=(
 [ -d "${HOME}/.ssh" ] && volumes+=(-v "${HOME}/.ssh":"${container_home}/.ssh":ro)
 
 # Persist common dev caches across runs
-_mount_cache() {
-  local host_dir="${1:?}" container_dir="${2:?}"
-  if [ -d "${host_dir}" ]; then
-    volumes+=(-v "${host_dir}":"${container_dir}")
-  fi
-}
 _mount_cache "${HOME}/.cache/go-build"  "${container_home}/.cache/go-build"
 _mount_cache "${HOME}/go"               "${container_home}/go"
 _mount_cache "${HOME}/.npm"             "${container_home}/.npm"
