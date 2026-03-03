@@ -54,7 +54,19 @@ function tn() {
     tmux attach-session -t "$name"
   fi
 }
+ta() {
+  local s="${1:-main}"
+  tmux attach -d -t "$s" 2>/dev/null || tmux new-session -s "$s"
+}
 
+kf() {
+  local sel
+  sel=$(command kfind --pick "${1:-.}") || return
+  [ -n "$sel" ] && cd "$sel" && kcc
+}
+kfn() { command kfind note "$*"; }
+kfp() { command kfind pin; }
+kfu() { command kfind unpin; }
 # Termcap stuff
 export LESS_TERMCAP_mb=$'\e[1;32m'
 export LESS_TERMCAP_md=$'\e[1;32m'
@@ -99,6 +111,8 @@ source_if_exists ${HOME}/.zshrc.local
 
 # Execute these scripts if they exist. 
 exec_if_exists ${HOME}/bin/configure-ssh-agent.sh
+
+
 
 # aliases
 alias ll="ls -lah"
