@@ -91,6 +91,7 @@ env_vars=()
 
 # Forward API key — check common env var names
 [ -n "${ANTHROPIC_API_KEY:-}" ] && env_vars+=(-e ANTHROPIC_API_KEY)
+[ -n "${CLAUDE_CODE_OAUTH_TOKEN:-}" ] && env_vars+=(-e CLAUDE_CODE_OAUTH_TOKEN)
 [ -n "${CLAUDE_CODE_USE_BEDROCK:-}" ] && env_vars+=(
   -e CLAUDE_CODE_USE_BEDROCK
   -e AWS_ACCESS_KEY_ID
