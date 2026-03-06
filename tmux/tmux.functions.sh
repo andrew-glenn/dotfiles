@@ -7,7 +7,7 @@ _host_specific_theme() {
   elif [[ $(hostname) == *radioshack* ]]; then
     tmux source-file "${repo}/tmux/tmux-themepack/powerline/block/magenta.tmuxtheme"
   else
-    tmux source-file "${repo}/tmux/tmux-themepack/powerline/block/cyan.tmuxtheme"
+    tmux source-file "${repo}/tmux/tmux-themepack/powerline/block/red.tmuxtheme"
   fi
   set +x
 }
@@ -187,6 +187,10 @@ _toggle_silence() {
   fi
 }
 
+_switch_prev_session() {
+  tmux switch-client -l
+}
+
 # ---
 
 case "${1}" in
@@ -198,6 +202,9 @@ case "${1}" in
     ;;
   "silence")
     _toggle_silence
+    ;;
+  "prev")
+    _switch_prev_session
     ;;
   "theme")
     _host_specific_theme
