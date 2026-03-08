@@ -7,7 +7,7 @@ _host_specific_theme() {
   elif [[ $(hostname) == *radioshack* ]]; then
     tmux source-file "${repo}/tmux/tmux-themepack/powerline/block/magenta.tmuxtheme"
   else
-    tmux source-file "${repo}/tmux/tmux-themepack/powerline/block/red.tmuxtheme"
+    tmux source-file "${repo}/tmux/tmux-themepack/powerline/block/cyan.tmuxtheme"
   fi
   set +x
 }
