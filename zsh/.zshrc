@@ -67,6 +67,7 @@ kf() {
 kfn() { command kfind note "$*"; }
 kfp() { command kfind pin; }
 kfu() { command kfind unpin; }
+
 # Termcap stuff
 export LESS_TERMCAP_mb=$'\e[1;32m'
 export LESS_TERMCAP_md=$'\e[1;32m'
@@ -112,13 +113,20 @@ source_if_exists ${HOME}/.zshrc.local
 # Execute these scripts if they exist. 
 exec_if_exists ${HOME}/bin/configure-ssh-agent.sh
 
-
-
 # aliases
 alias ll="ls -lah"
-alias kcc="kiro-cli-chat"
-
 # hooks
 eval "$(direnv hook zsh)"
 
 pyenv_if_exists
+
+# Kiro: if launched from $HOME, cd to temp dir first (no session retention)
+kag() {
+  if [ "$PWD" = "$HOME" ]; then
+    local tmpdir=$(mktemp -d "${TMPDIR:-/tmp}/kiro-scratch.XXXXXX")
+    (cd "$tmpdir" && command kiro-cli chat --agent AG "$@")
+    rm -rf "$tmpdir"
+  else
+    command kiro-cli chat --agent AG "$@"
+  fi
+}

@@ -112,8 +112,6 @@ Plug 'speshak/vim-cfn'
 Plug 'jaredgorski/spacecamp'
 Plug 'joshdick/onedark.vim'
 Plug 'sainnhe/sonokai'
-" Vim Script
-Plug 'folke/zen-mode.nvim'
 
 let g:make = 'gmake'
 if exists('make')
@@ -140,6 +138,11 @@ Plug 'nvim-lua/plenary.nvim'
 Plug 'nvim-telescope/telescope.nvim'
 Plug 'nvim-telescope/telescope-fzy-native.nvim'
 Plug 'pedrohdz/vim-yaml-folds'
+
+" Markdown syntax + glow preview
+Plug 'godlygeek/tabular'
+Plug 'preservim/vim-markdown'
+Plug 'jclsn/glow.vim'
 call plug#end()
 " Required:
 filetype plugin indent on
@@ -742,8 +745,15 @@ let g:terraform_fmt_on_save=1
 augroup markdown
     au!
     au BufNewFile,BufRead *.md setlocal ft=markdown
-    au BufEnter *.md colorscheme summerfruit256
 augroup END
+
+" Markdown settings (glow-like rendering)
+set conceallevel=2
+let g:vim_markdown_strikethrough = 1
+let g:vim_markdown_frontmatter = 1
+let g:vim_markdown_conceal_code_blocks = 0
+let g:vim_markdown_fenced_languages = ['python=python', 'bash=sh', 'javascript=javascript']
+let g:vim_markdown_folding_disabled = 1
 
 "=====================================================
 "" Asciidoctor Settings
