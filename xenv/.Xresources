@@ -1,5 +1,5 @@
 
-xterm*foreground:  #ffe9fc
+xterm*foreground:  #00FF41
 xterm*background:  #150014
 xterm*cursorColor: #ff82f6
 
@@ -16,7 +16,7 @@ xterm*color8: #880084
 xterm*color9: #e6949a
 xterm*color10: #8ebf73
 urxvt.background: #000000
-urxvt.foreground: #CDD6F4
+urxvt.foreground: #00FF41
 urxvt.cursorColor: #F5E0DC
 ! black
 urxvt.color0: #45475A
