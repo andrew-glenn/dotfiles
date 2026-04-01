@@ -192,6 +192,27 @@ _toggle_silence() {
   fi
 }
 
+_switch_session() {
+  local current
+  current="$(tmux display-message -p '#S')"
+  local target
+  target="$(tmux list-sessions -F '#S' \
+    | grep -v "^${current}$" \
+    | fzf --reverse --header='Switch session:' --prompt='> ')" || return 0
+  tmux switch-client -t "${target}"
+}
+
+_switch_window() {
+  local current
+  current="$(tmux display-message -p '#I')"
+  local target
+  target="$(tmux list-windows -F '#I: #W' \
+    | grep -v "^${current}:" \
+    | fzf --reverse --header='Switch window:' --prompt='> ')" || return 0
+  local idx="${target%%:*}"
+  tmux select-window -t "${idx}"
+}
+
 _switch_prev_session() {
   tmux switch-client -l
 }
@@ -207,6 +228,12 @@ case "${1}" in
     ;;
   "silence")
     _toggle_silence
+    ;;
+  "session")
+    _switch_session
+    ;;
+  "window")
+    _switch_window
     ;;
   "prev")
     _switch_prev_session
