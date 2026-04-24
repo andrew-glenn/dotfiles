@@ -1,15 +1,20 @@
 #!/usr/bin/env zsh
 _host_specific_theme() {
-  set -x
-  local repo="${DOTFILES_GIT_REPO:-$HOME/dotfiles}"
-  if [[ $(hostname) == *dev-dsk* ]]; then
-    tmux source-file "${repo}/tmux/tmux-themepack/powerline/block/yellow.tmuxtheme"
-  elif [[ $(hostname) == *radioshack* ]]; then
-    tmux source-file "${repo}/tmux/tmux-themepack/powerline/block/magenta.tmuxtheme"
-  else
-    tmux source-file "${repo}/tmux/tmux-themepack/powerline/block/cyan.tmuxtheme"
-  fi
-  set +x
+  local primary accent
+  case "$(hostname)" in
+    *dev-dsk*)    primary=208; accent=214 ;;  # orange on dev desks
+    *radioshack*) primary=198; accent=201 ;;  # hot pink on radioshack
+    *)            primary=46;  accent=118 ;;  # neon green default
+  esac
+
+  tmux set -g status-style "bg=colour232,fg=colour${primary}"
+  tmux set -g pane-active-border-style "fg=colour${primary},bold"
+  tmux set -g display-panes-active-colour "colour${primary}"
+  tmux setw -g window-status-current-style "bg=colour232,fg=colour${primary},bold"
+  tmux setw -g mode-style "bg=colour${primary},fg=colour232,bold"
+  tmux setw -g clock-mode-colour "colour${primary}"
+  tmux set -g status-left "#[fg=colour198,bold]┌─[#[fg=colour231]root@#h#[fg=colour198]]─[#[fg=colour${primary}]#S#[fg=colour198,nobold]] "
+  tmux display "Theme: host=$(hostname) primary=${primary} accent=${accent}"
 }
 _old_new_status() {
   while getopts 'x:X:w:g:d:n:' opt "$@"; do
