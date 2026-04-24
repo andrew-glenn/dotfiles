@@ -97,9 +97,9 @@ update_path_if_exists ${HOME}/bin
 update_path_if_exists ${HOME}/.cargo/bin
 update_path_if_exists ${HOME}/.local/bin
 update_path_if_exists ${HOME}/.toolbox/bin
-for dir in ${HOME}/dev/me/*/bin; do
-  update_path_if_exists ${dir}
-done
+#for dir in ${HOME}/dev/me/**/*/bin; do
+#  update_path_if_exists ${dir}
+#done
 
 # Source these files if they exists. 
 source_if_exists ${HOME}/.oh-my-zsh/oh-my-zsh.sh
@@ -117,7 +117,7 @@ source_if_exists ${HOME}/.zshrc.local
 exec_if_exists ${HOME}/bin/configure-ssh-agent.sh
 
 # conditional alias
-[[ -f ${DOTFILES_GIT_REPO}/scripts/claude-sandbox.sh ]] && alias claude="${DOTFILES_GIT_REPO}/scripts/claude-sandbox.sh"
+[[ -f ${DOTFILES_GIT_REPO}/scripts/claude-sandbox.sh && ! -e ${HOME}/.config/claude-local-only ]] && alias claude="${DOTFILES_GIT_REPO}/scripts/claude-sandbox.sh"
 # aliases
 alias ll="ls -lah"
 # hooks
