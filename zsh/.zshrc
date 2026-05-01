@@ -1,3 +1,7 @@
+# p10k instant prompt (must be first — before any console output)
+[[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]] && \
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+
 # helper functions
 function update_path_if_exists(){
   [[ ":${PATH}:" == *":${1}:"* ]] && return
@@ -13,11 +17,15 @@ function exec_if_exists(){
 }
 
 function pyenv_if_exists(){
-  [[ -d "${HOME}/.pyenv" ]] || return 
+  [[ -d "${HOME}/.pyenv" ]] || return
   export PYENV_ROOT="$HOME/.pyenv"
-  export PATH="$PYENV_ROOT/bin:$PATH"
-  eval "$(pyenv init --path)"
-  eval "$(pyenv init -)"
+  export PATH="$PYENV_ROOT/bin:$PYENV_ROOT/shims:$PATH"
+  pyenv() {
+    unfunction pyenv
+    eval "$(command pyenv init --path)"
+    eval "$(command pyenv init -)"
+    pyenv "$@"
+  }
 }
 
 function tn() {
@@ -81,13 +89,6 @@ export LESS_TERMCAP_us=$'\e[1;4;31m'
 export TERM=xterm-256color
 export MISE_SHELL=zsh
 
-# Oh-my-zsh stuff
-DISABLE_AUTO_UPDATE="true"
-DISABLE_MAGIC_FUNCTIONS="true"
-DISABLE_COMPFIX="true"
-ZSH_THEME="powerlevel10k/powerlevel10k"
-powerlevel10k_SHORTEN_DIR_LENGTH=2
-
 # PATH updates, if path exists. 
 update_path_if_exists /opt/homebrew/bin
 update_path_if_exists /usr/local/bin
@@ -97,21 +98,23 @@ update_path_if_exists ${HOME}/bin
 update_path_if_exists ${HOME}/.cargo/bin
 update_path_if_exists ${HOME}/.local/bin
 update_path_if_exists ${HOME}/.toolbox/bin
-#for dir in ${HOME}/dev/me/**/*/bin; do
-#  update_path_if_exists ${dir}
-#done
+if [[ -d ${HOME}/dev/me ]]; then 
+  for dir in ${HOME}/dev/me/*/bin; do
+    update_path_if_exists ${dir}
+  done
+fi
 
-# Source these files if they exists. 
-source_if_exists ${HOME}/.oh-my-zsh/oh-my-zsh.sh
+# Source p10k theme directly (no oh-my-zsh framework)
+source_if_exists ${HOME}/.oh-my-zsh/custom/themes/powerlevel10k/powerlevel10k.zsh-theme
 source_if_exists ${HOME}/.p10k.zsh
 source_if_exists ${HOME}/bin/functions.sh
 source_if_exists ${HOME}/.zshrc.local
 
 # Niche conditional vars. 
-[[ -L ${HOME}/.tmux.conf ]] && export DOTFILES_GIT_REPO=$(git -C ${$(readlink -f ${HOME}/.tmux.conf)%%tmux.conf} rev-parse --show-toplevel)
+[[ -L ${HOME}/.tmux.conf ]] && export DOTFILES_GIT_REPO=${DOTFILES_GIT_REPO:-$(git -C ${$(readlink -f ${HOME}/.tmux.conf)%%tmux.conf} rev-parse --show-toplevel)}
 
 # Non-standard source logic. 
-[[ -f ${HOME}/.local/bin/mise && ! -z ${DOTFILES_GIT_REPO} ]] &&  source ${DOTFILES_GIT_REPO}/zsh/mise-include.zsh
+[[ -f ${HOME}/.local/bin/mise && -f ${DOTFILES_GIT_REPO}/zsh/mise-include.zsh ]] && source ${DOTFILES_GIT_REPO}/zsh/mise-include.zsh
 
 # Execute these scripts if they exist. 
 exec_if_exists ${HOME}/bin/configure-ssh-agent.sh
@@ -130,8 +133,14 @@ kag() {
   if [ "$PWD" = "$HOME" ]; then
     local tmpdir=$(mktemp -d "${TMPDIR:-/tmp}/kiro-scratch.XXXXXX")
     (cd "$tmpdir" && command kiro-cli chat --agent AG "$@")
+    KIRO_AGENT=AG ~/.kiro/hooks/extract-transcript.sh "$tmpdir"
     rm -rf "$tmpdir"
   else
     command kiro-cli chat --agent AG "$@"
+    KIRO_AGENT=AG ~/.kiro/hooks/extract-transcript.sh "$PWD" &!
   fi
 }
+alias assistant="kiro-cli chat --agent assistant"
+
+# Added by AIM CLI
+export PATH="$HOME/.aim/mcp-servers:$PATH"
