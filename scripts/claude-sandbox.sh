@@ -56,7 +56,7 @@ fi
 
 
 project_dir="$(pwd)"
-repo_root="$(cd /home/ag/dev/me/claude-docker-sandbox && pwd)"
+repo_root="$(cd /home/ag/dev/me/active/claude/claude-docker-sandbox && pwd)"
 
 _ensure_image "${repo_root}/Dockerfile.agent"
 
