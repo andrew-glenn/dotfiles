@@ -100,11 +100,12 @@ update_path_if_exists ${HOME}/bin
 update_path_if_exists ${HOME}/.cargo/bin
 update_path_if_exists ${HOME}/.local/bin
 update_path_if_exists ${HOME}/.toolbox/bin
-if [[ -d ${HOME}/dev/me ]]; then 
-  for dir in ${HOME}/dev/me/*/bin; do
-    update_path_if_exists ${dir}
-  done
-fi
+## I'll fix this later
+# if [[ -d ${HOME}/dev/me ]] && [[ -d ${HOME}/dev/me/active ]]; then 
+#   for dir in ${HOME}/dev/me/active/*/bin; do
+#     update_path_if_exists ${dir}
+#   done
+# fi
 
 # Source p10k theme directly (no oh-my-zsh framework)
 source_if_exists ${HOME}/.oh-my-zsh/custom/themes/powerlevel10k/powerlevel10k.zsh-theme
