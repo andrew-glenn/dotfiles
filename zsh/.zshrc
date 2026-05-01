@@ -3,6 +3,8 @@
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 
 # helper functions
+export DOTFILES_GIT_REPO=${HOME}/.config/dotfiles
+
 function update_path_if_exists(){
   [[ ":${PATH}:" == *":${1}:"* ]] && return
   [[ -d ${1} ]] && export PATH="${PATH}:${1}"
