@@ -2,7 +2,7 @@
 _host_specific_theme() {
   local primary accent
   case "$(hostname)" in
-    *dev-dsk*)    primary=208; accent=214 ;;  # orange on dev desks
+    *dev-dsk*|devbox)    primary=208; accent=214 ;;  # orange on dev desks / devbox
     *radioshack*) primary=198; accent=201 ;;  # hot pink on radioshack
     *)            primary=46;  accent=118 ;;  # neon green default
   esac
