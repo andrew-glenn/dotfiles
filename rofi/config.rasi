@@ -1,0 +1,89 @@
+configuration {
+  modes:                "drun,run,window,ssh";
+  show-icons:           false;
+  font:                 "Hack Nerd Font 11";
+  display-drun:         "λ";
+  display-run:          "$";
+  display-window:       "◧";
+  display-ssh:          "ssh";
+  drun-display-format:  "{name}";
+  matching:             "fuzzy";
+  sort:                 true;
+  sorting-method:       "fzf";
+}
+
+@theme "/dev/null"
+
+* {
+  bg:        #000000;
+  bg-alt:    #001a00;
+  fg:        #00ff00;
+  fg-dim:    #005500;
+  accent:    #00ff00;
+  urgent:    #ff5555;
+
+  background-color:     transparent;
+  text-color:           @fg;
+  border-color:         @accent;
+}
+
+window {
+  transparency:         "real";
+  background-color:     @bg;
+  border:               1px;
+  border-color:         @accent;
+  width:                640px;
+  location:             center;
+  padding:              16px;
+}
+
+mainbox {
+  children:             [ inputbar, listview ];
+  spacing:              12px;
+}
+
+inputbar {
+  children:             [ prompt, entry ];
+  padding:              8px 10px;
+  background-color:     @bg-alt;
+  border:               1px;
+  border-color:         @fg-dim;
+}
+
+prompt {
+  text-color:           @fg-dim;
+  padding:              0 8px 0 0;
+}
+
+entry {
+  placeholder:          "search...";
+  placeholder-color:    @fg-dim;
+  text-color:           @fg;
+}
+
+listview {
+  lines:                10;
+  scrollbar:            false;
+  spacing:              2px;
+}
+
+element {
+  padding:              6px 10px;
+  text-color:           @fg-dim;
+}
+
+element selected {
+  background-color:     @bg-alt;
+  text-color:           @fg;
+  border:               0 0 0 2px;
+  border-color:         @accent;
+}
+
+element-text {
+  background-color:     transparent;
+  text-color:           inherit;
+}
+
+element urgent {
+  text-color:           @urgent;
+}

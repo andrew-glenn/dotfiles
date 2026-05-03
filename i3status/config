@@ -1,0 +1,59 @@
+# i3status — phosphor green theme
+# see "man i3status" for documentation.
+
+general {
+        colors = true
+        interval = 5
+        color_good     = "#00ff00"
+        color_degraded = "#33aa00"
+        color_bad      = "#ff5555"
+        markup = "pango"
+        separator = true
+}
+
+order += "wireless _first_"
+order += "ethernet _first_"
+order += "battery all"
+order += "disk /"
+order += "load"
+order += "memory"
+order += "tztime local"
+
+wireless _first_ {
+        format_up = "<span color='#005500'>wifi</span> %essid %quality"
+        format_down = "<span color='#005500'>wifi</span> <span color='#ff5555'>down</span>"
+}
+
+ethernet _first_ {
+        format_up = "<span color='#005500'>eth</span> %ip"
+        format_down = "<span color='#005500'>eth</span> <span color='#ff5555'>down</span>"
+}
+
+battery all {
+        format = "<span color='#005500'>bat</span> %status %percentage"
+        format_down = ""
+        status_chr = "↯"
+        status_bat = "▼"
+        status_unk = "?"
+        status_full = "●"
+        low_threshold = 15
+        threshold_type = percentage
+}
+
+disk "/" {
+        format = "<span color='#005500'>disk</span> %avail"
+}
+
+load {
+        format = "<span color='#005500'>load</span> %1min"
+}
+
+memory {
+        format = "<span color='#005500'>mem</span> %used"
+        threshold_degraded = "1G"
+        format_degraded = "<span color='#005500'>mem</span> <span color='#ff5555'>%available</span>"
+}
+
+tztime local {
+        format = "<span color='#005500'>%a</span> %Y-%m-%d <span color='#005500'>·</span> %H:%M"
+}
