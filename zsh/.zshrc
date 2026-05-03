@@ -120,7 +120,7 @@ source_if_exists ${HOME}/.zshrc.local
 [[ -f ${HOME}/.local/bin/mise && -f ${DOTFILES_GIT_REPO}/zsh/mise-include.zsh ]] && source ${DOTFILES_GIT_REPO}/zsh/mise-include.zsh
 
 # Execute these scripts if they exist. 
-exec_if_exists ${HOME}/bin/configure-ssh-agent.sh
+[ -r ${HOME}/bin/configure-ssh-agent.sh ] && source ${HOME}/bin/configure-ssh-agent.sh
 
 # conditional alias
 [[ -f ${DOTFILES_GIT_REPO}/scripts/claude-sandbox.sh && ! -e ${HOME}/.config/claude-local-only ]] && alias claude="${DOTFILES_GIT_REPO}/scripts/claude-sandbox.sh"
