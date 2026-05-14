@@ -1,20 +1,25 @@
 #!/usr/bin/env zsh
 _host_specific_theme() {
-  local primary accent
-  case "$(hostname)" in
-    *dev-dsk*|devbox)    primary=208; accent=214 ;;  # orange on dev desks / devbox
-    *radioshack*) primary=198; accent=201 ;;  # hot pink on radioshack
-    *)            primary=46;  accent=118 ;;  # neon green default
+  # Sets palette user options consumed by style strings in tmux.conf
+  # (#{@c_text}, #{@c_dim}, #{@c_accent}, #{@c_actv}) plus the two
+  # display-panes-*-colour settings, which don't accept format expansion.
+  local text dim accent actv label
+  case "$(hostname -s)" in
+    devbox)
+      text=159; dim=24;  accent=45;  actv=87;  label="cyan (devbox)" ;;
+    *radioshack*)
+      text=255; dim=89;  accent=198; actv=201; label="hot pink" ;;
+    *)
+      text=223; dim=94;  accent=208; actv=220; label="amber (Mr. Robot)" ;;
   esac
 
-  tmux set -g status-style "bg=colour232,fg=colour${primary}"
-  tmux set -g pane-active-border-style "fg=colour${primary},bold"
-  tmux set -g display-panes-active-colour "colour${primary}"
-  tmux setw -g window-status-current-style "bg=colour232,fg=colour${primary},bold"
-  tmux setw -g mode-style "bg=colour${primary},fg=colour232,bold"
-  tmux setw -g clock-mode-colour "colour${primary}"
-  tmux set -g status-left "#[fg=colour198,bold]┌─[#[fg=colour231]root@#h#[fg=colour198]]─[#[fg=colour${primary}]#S#[fg=colour198,nobold]] "
-  tmux display "Theme: host=$(hostname) primary=${primary} accent=${accent}"
+  tmux set -g @c_text   "colour${text}"
+  tmux set -g @c_dim    "colour${dim}"
+  tmux set -g @c_accent "colour${accent}"
+  tmux set -g @c_actv   "colour${actv}"
+  tmux set -g display-panes-colour        "colour${dim}"
+  tmux set -g display-panes-active-colour "colour${accent}"
+  tmux display "Theme: $(hostname -s) → ${label}"
 }
 _old_new_status() {
   while getopts 'x:X:w:g:d:n:' opt "$@"; do
@@ -42,7 +47,7 @@ _old_new_status() {
   shift $((OPTIND - 1))
   new=""
   case "${_current}" in
-  "${_default}" || "")
+  "${_default}"|"")
     new="${_new}"
     ;;
   "${_new}")
@@ -60,19 +65,35 @@ _toggle_mouse() {
   tmux set -qg mouse $onsv \; display "Mouse Mode: [$onsv]"
 }
 
+_pane_jumper() {
+  local pick target
+  pick=$(tmux list-panes -aF '#{session_name}:#{window_index}.#{pane_index}  [#{pane_current_command}]  #{=|40|…:pane_title}' \
+    | fzf --reverse --no-sort --header='jump to pane') || return 0
+  target=${pick%% *}
+  [ -z "${target}" ] && return 0
+  tmux switch-client -t "${target%%:*}"
+  tmux select-window  -t "${target%.*}"
+  tmux select-pane    -t "${target}"
+}
+
 _toggle_pane_sync() {
-  _old_new_status -x "show-options" -X "wv" -w "synchronize-panes"
-  tmux set-window-option -q synchronize-panes $onsv \; display "Pane Sync: [$onsv]"
+  local current new
+  current=$(tmux show-window-options -v synchronize-panes 2>/dev/null || echo off)
+  [ "${current}" = "on" ] && new=off || new=on
+  tmux set-window-option -q synchronize-panes "${new}"
+  tmux refresh-client -S
+  tmux display "Pane Sync: [${new}]"
 }
 
 _toggle_prefix() {
-  _old_new_status -w "prefix" -d "C-b" -n "None"
+  _old_new_status -g "prefix" -d "C-b" -n "None"
   if [[ "${onsv}" == "None" ]]; then
-    tmux setw -q status off
+    tmux set -gq status off
   else
-    tmux setw -q status on
+    tmux set -gq status on
   fi
-  tmux setw -q prefix "${onsv}"
+  tmux set -gq prefix "${onsv}"
+  tmux display "Prefix: [${onsv}]"
 }
 
 _urlview() {
@@ -219,6 +240,12 @@ _switch_prev_session() {
 
 # ---
 
+# Dispatcher only fires when the script is invoked with a subcommand;
+# `source`-ing without args just loads the function definitions.
+if [ $# -eq 0 ]; then
+  return 0 2>/dev/null || exit 0
+fi
+
 case "${1}" in
   "prefix")
     _toggle_prefix
@@ -237,6 +264,9 @@ case "${1}" in
     ;;
   "prev")
     _switch_prev_session
+    ;;
+  "pane_jumper")
+    _pane_jumper
     ;;
   "theme")
     _host_specific_theme
