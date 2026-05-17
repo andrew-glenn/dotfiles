@@ -32,15 +32,14 @@ _rename_window() {
 
 _ensure_image() {
   local dockerfile="${1:?}" force_rebuild="${2:-0}"
-  local desired current
-  desired="$(sha256sum "${dockerfile}" | awk '{print $1}')"
-  current="$(docker image inspect -f '{{ index .Config.Labels "dockerfile.sha256"}}' "${IMAGE}" 2>/dev/null || true)"
-  if [ "${force_rebuild}" = "1" ] || [ "${desired}" != "${current}" ]; then
-    echo "Building ${IMAGE} image (sha=${desired:0:12})..."
-    docker build \
-      --label "dockerfile.sha256=${desired}" \
-      -f "${dockerfile}" -t "${IMAGE}" \
-      "$(dirname "${dockerfile}")"
+  if [ "${force_rebuild}" = "1" ]; then
+    echo "Rebuilding ${IMAGE} — run 'make rebuild' in ${repo_root} for full rebuild."
+    (cd "${repo_root}" && make build)
+    return
+  fi
+  if ! docker image inspect "${IMAGE}" &>/dev/null; then
+    echo "Image ${IMAGE} not found. Run 'make build' in ${repo_root} first." >&2
+    exit 1
   fi
 }
 
