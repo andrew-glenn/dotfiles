@@ -1,31 +1,5 @@
-# Ghostty Config — Mid-dark (glare-resistant)
-
-macos-titlebar-style = hidden
-quit-after-last-window-closed = true
-quick-terminal-animation-duration = 1
-confirm-close-surface = false
-resize-overlay = never
-window-inherit-working-directory = false
-scrollback-limit = 429496729
-link-url = false 
-
-# Font
-font-family = "Hack Nerd Font Mono"
-font-style = medium
-font-size = 23
-
-# Window / padding
-window-padding-x = 45
-window-padding-y = 20
-
-# Transparency
-background-opacity = 1.0
-
-# Keybindings
-keybind = super+shift+f=toggle_fullscreen
-
 # Colors — espresso, full send
-background = #0a0a0a
+background = #1c1816
 foreground = #f4e8da
 cursor-color = #f0a050
 cursor-style = block
