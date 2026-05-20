@@ -1,0 +1,28 @@
+# Colors — espresso, chromatic warmth
+background = #2e2520
+foreground = #e0d4c8
+cursor-color = #e0d4c8
+cursor-style = block
+cursor-style-blink = true
+selection-background = #4d3d32
+selection-foreground = #f0e8df
+
+# Normal colors (0-7)
+palette = 0=#3d3028
+palette = 1=#c75f5f
+palette = 2=#8fad5c
+palette = 3=#d4a04a
+palette = 4=#6a9fba
+palette = 5=#a87db5
+palette = 6=#5bab94
+palette = 7=#c9bfb2
+
+# Bright colors (8-15)
+palette = 8=#5c4a3e
+palette = 9=#da7070
+palette = 10=#a3c26a
+palette = 11=#e2b35c
+palette = 12=#7db3cc
+palette = 13=#be94ca
+palette = 14=#6ec0a8
+palette = 15=#e0d6c9
