@@ -1,5 +1,11 @@
 return {
   {
+    "rebelot/kanagawa.nvim",
+    lazy = false,
+    priority = 1000,
+    opts = { theme = "wave" },
+  },
+  {
     "bluz71/vim-moonfly-colors",
     name = "moonfly",
     lazy = false,

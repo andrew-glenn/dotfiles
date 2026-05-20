@@ -4,6 +4,6 @@ return {
     "folke/zen-mode.nvim",
     cmd = "ZenMode",
     ft = "markdown",
-    opts = { plugins = { twilight = { enabled = true } } },
+    opts = { plugins = { twilight = { enabled = false } } },
   },
 }
