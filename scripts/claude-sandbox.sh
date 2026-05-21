@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 # Run Claude Code interactively inside a Docker container.
 # If inside tmux and stdin is a tty, prompts for a window name first.
-# Usage: claude-sandbox.sh [--rebuild] [claude args...]
+# Usage: claude-sandbox.sh [--rebuild] [--ephemeral] [claude args...]
+#
+# --ephemeral: throwaway session. Workspace is a fresh mktemp -d, ~/.claude
+# state (projects/, todos/, history) is discarded, but auth (~/.claude.json
+# scratch copy) and plugins (RO) are kept so the session works out of the box.
 
 set -euo pipefail
 
@@ -52,10 +56,14 @@ _mount_cache() {
 # --- args
 
 force_rebuild=0
-if [ "${1:-}" = "--rebuild" ]; then
-  force_rebuild=1
-  shift
-fi
+ephemeral=0
+while [ $# -gt 0 ]; do
+  case "${1}" in
+    --rebuild)   force_rebuild=1; shift ;;
+    --ephemeral) ephemeral=1; shift ;;
+    *) break ;;
+  esac
+done
 
 # --- main
 
@@ -66,15 +74,18 @@ if [ -n "${TMUX:-}" ] && [ -t 0 ]; then
   fi
 fi
 
-project_dir="$(pwd)"
+if [ "${ephemeral}" = "1" ]; then
+  project_dir="$(mktemp -d -t claude-sandbox-ephemeral.XXXXXX)"
+  echo "Ephemeral workspace: ${project_dir}" >&2
+else
+  project_dir="$(pwd)"
+fi
 repo_root="$(cd /home/ag/dev/me/active/claude/claude-docker-sandbox && pwd)"
 
 _ensure_image "${repo_root}/Dockerfile" "${force_rebuild}"
 
 # Slug mirrors Claude's own ~/.claude/projects/ naming: / and . both become -.
 host_project_slug="$(echo "${project_dir}" | sed 's|[/.]|-|g')"
-host_project_dir="${HOME}/.claude/projects/${host_project_slug}"
-mkdir -p "${host_project_dir}"
 
 # One sandbox per host project dir. If you need a second shell into a running
 # session, `docker exec -it <container_name> bash`.
@@ -87,14 +98,39 @@ fi
 
 container_home="/home/node"
 
-# Per-host-project namespace for ~/.claude/projects/<slug> so transcripts,
-# memory, and project state don't collide across host projects (they all
-# cd to /workspace inside the container, which would otherwise collapse
-# every host project onto the same `-workspace` slug).
+# Mirror the host project path inside the container so Claude's own project
+# slug (derived from cwd) matches the host's. This keeps transcripts,
+# claude-mem observations, and any plugin that keys off cwd or the projects/
+# slug aligned across host and sandbox — no -workspace collapsing.
+if [ "${ephemeral}" = "1" ]; then
+  # Scratch ~/.claude so the bulky stateful bits (projects/, todos/, history)
+  # don't pollute the host. Seed with everything else via rsync so OAuth /
+  # credentials / settings / mcp config all come along — Claude needs more
+  # than just .credentials.json to recognize a logged-in session.
+  # Plugins are nested-mounted RO below (rsync excludes them too).
+  claude_home_scratch="$(mktemp -d -t claude-sandbox-home.XXXXXX)"
+  trap 'rm -rf "${project_dir}" "${claude_home_scratch}"' EXIT
+  rsync -a \
+    --exclude='/projects/' \
+    --exclude='/todos/' \
+    --exclude='/sessions/' \
+    --exclude='/file-history/' \
+    --exclude='/debug/' \
+    --exclude='/backups/' \
+    --exclude='/shell-snapshots/' \
+    --exclude='/paste-cache/' \
+    --exclude='/session-env/' \
+    --exclude='/plugins/' \
+    --exclude='history.jsonl' \
+    "${HOME}/.claude/" "${claude_home_scratch}/"
+  claude_home_mount="${claude_home_scratch}"
+else
+  claude_home_mount="${HOME}/.claude"
+fi
+
 volumes=(
-  -v "${project_dir}":/workspace
-  -v "${HOME}/.claude":"${container_home}/.claude"
-  -v "${host_project_dir}":"${container_home}/.claude/projects/-workspace"
+  -v "${project_dir}":"${project_dir}"
+  -v "${claude_home_mount}":"${container_home}/.claude"
 )
 
 # Plugins shared from host: outer RO so sandbox can't mutate installed_plugins.json,
@@ -117,6 +153,13 @@ if [ -f "${HOME}/.claude.json" ]; then
   claude_json_scratch="${HOME}/.cache/claude-sandbox/claude-json/${host_project_slug}.json"
   mkdir -p "$(dirname "${claude_json_scratch}")"
   cp "${HOME}/.claude.json" "${claude_json_scratch}"
+  # Auto-trust the ephemeral workspace so Claude doesn't prompt on launch.
+  if [ "${ephemeral}" = "1" ] && command -v jq >/dev/null 2>&1; then
+    tmp_json="$(mktemp)"
+    jq --arg p "${project_dir}" \
+      '.projects[$p] = ((.projects[$p] // {}) + {hasTrustDialogAccepted: true})' \
+      "${claude_json_scratch}" > "${tmp_json}" && mv "${tmp_json}" "${claude_json_scratch}"
+  fi
   volumes+=(-v "${claude_json_scratch}":"${container_home}/.claude.json")
 fi
 
@@ -182,7 +225,9 @@ if [ -z "${CLAUDE_SANDBOX_NO_LIMITS:-}" ]; then
   )
 fi
 
-exec docker run --rm ${tty_flag} --init \
+# In ephemeral mode we want the EXIT trap to fire, so don't exec away the shell.
+if [ "${ephemeral}" = "1" ]; then run_prefix=""; else run_prefix="exec"; fi
+${run_prefix} docker run --rm ${tty_flag} --init \
   --name "${container_name}" \
   --user "$(id -u):$(id -g)" \
   --security-opt no-new-privileges \
@@ -191,6 +236,6 @@ exec docker run --rm ${tty_flag} --init \
   ${env_vars[@]+"${env_vars[@]}"} \
   -e HOME="${container_home}" \
   -e TERM="${TERM:-xterm-256color}" \
-  -w /workspace \
+  -w "${project_dir}" \
   --network=host \
   "${IMAGE}" --dangerously-skip-permissions "$@"
