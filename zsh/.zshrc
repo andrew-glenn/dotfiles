@@ -1,13 +1,17 @@
-# Termcap stuff
-export LESS_TERMCAP_mb=$'\e[1;32m'
-export LESS_TERMCAP_md=$'\e[1;32m'
-export LESS_TERMCAP_me=$'\e[0m'
-export LESS_TERMCAP_se=$'\e[0m'
-export LESS_TERMCAP_so=$'\e[01;33m'
-export LESS_TERMCAP_ue=$'\e[0m'
-export LESS_TERMCAP_us=$'\e[1;4;31m'
+# history
+HISTFILE=~/.zsh_history
+HISTSIZE=50000
+SAVEHIST=50000
+setopt SHARE_HISTORY
+setopt EXTENDED_HISTORY
+setopt INC_APPEND_HISTORY
+setopt HIST_IGNORE_DUPS
+setopt HIST_IGNORE_ALL_DUPS
+setopt HIST_IGNORE_SPACE
+setopt HIST_REDUCE_BLANKS
+setopt HIST_VERIFY
 
-export DOTFILES_GIT_REPO=${HOME}/.config/dotfiles
+echo -ne '\e[4 q'
 
 # p10k instant prompt (must be first — before any console output)
 if [[ -z "$SKIP_OMZ" ]]; then
@@ -93,7 +97,61 @@ kfn() { command kfind note "$*"; }
 kfp() { command kfind pin; }
 kfu() { command kfind unpin; }
 
-# Kiro
+# Termcap stuff
+export LESS_TERMCAP_mb=$'\e[1;32m'
+export LESS_TERMCAP_md=$'\e[1;32m'
+export LESS_TERMCAP_me=$'\e[0m'
+export LESS_TERMCAP_se=$'\e[0m'
+export LESS_TERMCAP_so=$'\e[01;33m'
+export LESS_TERMCAP_ue=$'\e[0m'
+export LESS_TERMCAP_us=$'\e[1;4;31m'
+
+# Terminal / tool stuff
+export TERM=xterm-256color
+export MISE_SHELL=zsh
+
+# PATH updates, if path exists. 
+update_path_if_exists /opt/homebrew/bin
+update_path_if_exists /usr/local/bin
+update_path_if_exists /opt/homebrew/opt/gnu-sed/libexec/gnubin
+update_path_if_exists ${HOME}/Library/Python3.7/bin
+update_path_if_exists ${HOME}/bin
+update_path_if_exists ${HOME}/.cargo/bin
+update_path_if_exists ${HOME}/.local/bin
+update_path_if_exists ${HOME}/.toolbox/bin
+update_path_if_exists ${HOME}/.aim/mcp-servers
+## I'll fix this later
+# if [[ -d ${HOME}/dev/me ]] && [[ -d ${HOME}/dev/me/active ]]; then 
+#   for dir in ${HOME}/dev/me/active/*/bin; do
+#     update_path_if_exists ${dir}
+#   done
+# fi
+
+# Source p10k theme directly (no oh-my-zsh framework)
+source_if_exists ${HOME}/.oh-my-zsh/custom/themes/powerlevel10k/powerlevel10k.zsh-theme
+source_if_exists ${HOME}/.p10k.zsh
+source_if_exists ${HOME}/bin/functions.sh
+source_if_exists ${HOME}/.zshrc.local
+
+# Niche conditional vars. 
+[[ -L ${HOME}/.tmux.conf ]] && export DOTFILES_GIT_REPO=${DOTFILES_GIT_REPO:-$(git -C ${$(readlink -f ${HOME}/.tmux.conf)%%tmux.conf} rev-parse --show-toplevel)}
+
+# Non-standard source logic. 
+[[ -f ${HOME}/.local/bin/mise && -f ${DOTFILES_GIT_REPO}/zsh/mise-include.zsh ]] && source ${DOTFILES_GIT_REPO}/zsh/mise-include.zsh
+
+# Execute these scripts if they exist. 
+[ -r ${HOME}/bin/configure-ssh-agent.sh ] && source ${HOME}/bin/configure-ssh-agent.sh
+
+# conditional alias
+[[ -f ${DOTFILES_GIT_REPO}/scripts/claude-sandbox.sh && ! -e ${HOME}/.config/claude-local-only ]] && alias claude="${DOTFILES_GIT_REPO}/scripts/claude-sandbox.sh"
+# aliases
+alias ll="ls -lah"
+# hooks
+eval "$(direnv hook zsh)"
+
+pyenv_if_exists
+
+# Kiro: if launched from $HOME, cd to temp dir first (no session retention)
 kag() {
   if [ "$PWD" = "$HOME" ]; then
     local tmpdir=$(mktemp -d "${TMPDIR:-/tmp}/kiro-scratch.XXXXXX")
@@ -105,74 +163,5 @@ kag() {
     KIRO_AGENT=AG ~/.kiro/hooks/extract-transcript.sh "$PWD" &!
   fi
 }
-
-grb() {
-  for d in */; do
-    [ -d "$d.git/rebase-merge" ] || [ -d "$d.git/rebase-apply" ] && echo "$d"
-  done
-}
-
-nuke() { ps aux | grep -i "$1" | grep -v grep | awk '{print $2}' | xargs kill -9; }
-
-
-# Terminal / tool stuff
-export TERM=xterm-256color
-export MISE_SHELL=zsh
-export EDITOR=nvim
-
-# PATH updates
-update_path_if_exists /opt/homebrew/bin
-update_path_if_exists /usr/local/bin
-update_path_if_exists /opt/homebrew/opt/gnu-sed/libexec/gnubin
-update_path_if_exists ${HOME}/Library/Python3.7/bin
-update_path_if_exists ${HOME}/bin
-update_path_if_exists ${HOME}/.cargo/bin
-update_path_if_exists ${HOME}/.local/bin
-update_path_if_exists ${HOME}/.toolbox/bin
-
-if [[ -d ${HOME}/dev/me ]]; then
-  for dir in ${HOME}/dev/me/*/bin; do
-    update_path_if_exists ${dir}
-  done
-fi
-
-# Source p10k theme
-if [[ -z "$SKIP_OMZ" ]]; then
-  if [[ -f ${HOME}/powerlevel10k/powerlevel10k.zsh-theme ]]; then
-    source ${HOME}/powerlevel10k/powerlevel10k.zsh-theme
-  else
-    source_if_exists ${HOME}/.oh-my-zsh/custom/themes/powerlevel10k/powerlevel10k.zsh-theme
-  fi
-  source_if_exists ${HOME}/.p10k.zsh
-fi
-
-source_if_exists ${HOME}/bin/functions.sh
-source_if_exists ${HOME}/.zshrc.local
-
-# Non-standard source logic
-[[ -f ${HOME}/.local/bin/mise && -f ${DOTFILES_GIT_REPO}/zsh/mise-include.zsh ]] && source ${DOTFILES_GIT_REPO}/zsh/mise-include.zsh
-
-# fzf integration
-if command -v fzf &>/dev/null; then
-  source <(fzf --zsh) 2>/dev/null || source_if_exists ~/.fzf.zsh
-fi
-
-# Execute these scripts if they exist
-exec_if_exists ${HOME}/bin/configure-ssh-agent.sh
-
-# conditional alias
-if [[ -f ${DOTFILES_GIT_REPO}/scripts/claude-sandbox.sh ]]; then
-  if [[ ! -f ${HOME}/.config/.no_claude_alias ]] ; then
-    alias claude="${DOTFILES_GIT_REPO}/scripts/claude-sandbox.sh"
-  fi
-fi
-
-# aliases
 alias assistant="kiro-cli chat --agent assistant"
-alias ll="lsd -la --group-directories-first"
-
-# hooks
-eval "$(direnv hook zsh)"
-
-pyenv_if_exists
-
+alias cat="batcat"
