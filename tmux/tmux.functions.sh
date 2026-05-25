@@ -60,8 +60,6 @@ _old_new_status() {
 }
 _toggle_mouse() {
   _old_new_status -g "mouse" -d "on" -n "off"
-
-  tmux set -qg mouse-select-pane ${onsv}
   tmux set -qg mouse $onsv \; display "Mouse Mode: [$onsv]"
 }
 
@@ -86,38 +84,19 @@ _toggle_pane_sync() {
 }
 
 _toggle_prefix() {
-  _old_new_status -g "prefix" -d "C-b" -n "None"
-  if [[ "${onsv}" == "None" ]]; then
-    tmux set -gq status off
+  local current
+  current=$(tmux show -qv prefix 2>/dev/null)
+  [ -z "${current}" ] && current=$(tmux show -gqv prefix 2>/dev/null)
+  local new
+  if [ "${current}" = "None" ]; then
+    new="C-b"
+    tmux set -q status on
   else
-    tmux set -gq status on
+    new="None"
+    tmux set -q status off
   fi
-  tmux set -gq prefix "${onsv}"
-  tmux display "Prefix: [${onsv}]"
-}
-
-_urlview() {
-  tmux capture-pane -J -S - -E - -b "urlview-$1" -t "$1"
-  tmux split-window "tmux show-buffer -b urlview-$1 | urlview || true; tmux delete-buffer -b urlview-$1"
-}
-
-_fpp() {
-  tmux capture-pane -J -S - -E - -b "fpp-$1" -t "$1"
-  tmux split-window "tmux show-buffer -b fpp-$1 | fpp || true; tmux delete-buffer -b fpp-$1"
-}
-
-_toggle_scratch_session() {
-  if [ -n "${TMUX_SCRATCH_SESSION}" ]; then
-    tmux detach -s scratch
-  else
-    tmux new-session -A -e "TMUX_SCRATCH_SESSION=true" -s scratch
-  fi
-}
-
-_conditional_new_window() {
-  if [[ -d "/Users/" ]]; then
-    tmux new-window
-  fi
+  tmux set -q prefix "${new}"
+  tmux display "Prefix: [${new}]"
 }
 
 _pick_mode() {

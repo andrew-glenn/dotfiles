@@ -87,6 +87,18 @@ ta() {
   tmux attach -d -t "$s" 2>/dev/null || tmux new-session -s "$s"
 }
 
+s() {
+  local host="${1:?Usage: s <host>}"
+  local session="${host%%.*}"
+  if tmux has-session -t "${session}" 2>/dev/null; then
+    [[ -n "${TMUX}" ]] && tmux switch-client -t "${session}" || tmux attach -t "${session}"
+    return
+  fi
+  tmux new-session -d -s "${session}"
+  tmux send-keys -t "${session}" "ssh ${host}" Enter
+  [[ -n "${TMUX}" ]] && tmux switch-client -t "${session}" || tmux attach -t "${session}"
+}
+
 kf() {
   local sel
   sel=$(command kfind --pick "${1:-.}") || return
