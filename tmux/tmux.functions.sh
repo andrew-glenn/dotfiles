@@ -217,6 +217,13 @@ _switch_prev_session() {
   tmux switch-client -l
 }
 
+_launch_assistant() {
+  command -v kiro-cli >/dev/null 2>&1 || return 0
+  local cwd
+  cwd="$(tmux display-message -p '#{pane_current_path}')"
+  tmux new-window -c "${cwd}" -n "assistant" "kiro-cli chat --agent assistant"
+}
+
 # ---
 
 # Dispatcher only fires when the script is invoked with a subcommand;
@@ -249,6 +256,9 @@ case "${1}" in
     ;;
   "theme")
     _host_specific_theme
+    ;;
+  "assistant")
+    _launch_assistant
     ;;
   *)
     exit 1
