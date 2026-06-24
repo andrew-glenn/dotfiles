@@ -1,6 +1,5 @@
 # Ghostty Config — Mid-dark (glare-resistant)
 
-macos-titlebar-style = hidden
 quit-after-last-window-closed = true
 quick-terminal-animation-duration = 1
 confirm-close-surface = false
