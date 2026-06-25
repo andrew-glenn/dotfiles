@@ -80,9 +80,12 @@ if [ "${ephemeral}" = "1" ]; then
 else
   project_dir="$(pwd)"
 fi
-repo_root="$(cd /home/ag/dev/me/active/claude/claude-docker-sandbox && pwd)"
 
-_ensure_image "${repo_root}/Dockerfile" "${force_rebuild}"
+repo_root="${HOME}/dev/me/active/claude/claude-docker-sandbox"
+if [[ -d "${repo_root}" ]]; then 
+	cd ${repo_root}
+	_ensure_image "${repo_root}/Dockerfile" "${force_rebuild}"
+fi
 
 # Slug mirrors Claude's own ~/.claude/projects/ naming: / and . both become -.
 host_project_slug="$(echo "${project_dir}" | sed 's|[/.]|-|g')"
