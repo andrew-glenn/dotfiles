@@ -140,8 +140,10 @@ update_path_if_exists ${HOME}/.aim/mcp-servers
 # fi
 
 # Source p10k theme directly (no oh-my-zsh framework)
-source_if_exists ${HOME}/.oh-my-zsh/custom/themes/powerlevel10k/powerlevel10k.zsh-theme
-source_if_exists ${HOME}/.p10k.zsh
+source_if_exists ${XDG_DATA_HOME:-$HOME/.local/share}/powerlevel10k/powerlevel10k.zsh-theme
+# Point `p10k configure` at the XDG config so it writes back to the symlink.
+export POWERLEVEL9K_CONFIG_FILE=${XDG_CONFIG_HOME:-$HOME/.config}/p10k/p10k.zsh
+source_if_exists ${POWERLEVEL9K_CONFIG_FILE}
 source_if_exists ${HOME}/bin/functions.sh
 source_if_exists ${HOME}/.zshrc.local
 
