@@ -53,19 +53,15 @@ vim_stuff() {
 }
 
 zsh_stuff() {
-  if [ ! -d "$HOME/.oh-my-zsh" ]; then
-    # --unattended: don't chsh or exec zsh, which would hijack this script.
-    _download_and_exec_script \
-      https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh --unattended
-  fi
-
-  local zsh_custom="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}"
-  if [ ! -d "$zsh_custom/themes/powerlevel10k" ]; then
-    git clone --depth=1 https://github.com/romkatv/powerlevel10k.git \
-      "$zsh_custom/themes/powerlevel10k"
-  fi
+  # powerlevel10k is vendored as a git submodule (zsh/powerlevel10k) and the
+  # .zshrc sources it directly — no oh-my-zsh framework. Expose the submodule
+  # under XDG_DATA_HOME instead of cloning a second copy into ~/.
+  _conditionally_create_symlink "$DOTFILES/zsh/powerlevel10k" \
+    "${XDG_DATA_HOME:-$HOME/.local/share}/powerlevel10k"
 
   _conditionally_create_symlink "$DOTFILES/zsh/.zshrc" "$HOME/.zshrc"
+  _conditionally_create_symlink "$DOTFILES/zsh/.p10k.zsh" \
+    "${XDG_CONFIG_HOME:-$HOME/.config}/p10k/p10k.zsh"
 }
 
 tmux_stuff() {
@@ -76,6 +72,9 @@ tmux_stuff() {
 }
 
 main() {
+  # Populate vendored submodules (powerlevel10k, tmux-menus, tmux-themepack).
+  git -C "$DOTFILES" submodule update --init --recursive
+
   homebrew_stuff
   ssh_stuff
   vim_stuff
