@@ -148,6 +148,8 @@ source_if_exists ${HOME}/.zshrc.local
 # Niche conditional vars. 
 [[ -L ${HOME}/.tmux.conf ]] && export DOTFILES_GIT_REPO=${DOTFILES_GIT_REPO:-$(git -C ${$(readlink -f ${HOME}/.tmux.conf)%%tmux.conf} rev-parse --show-toplevel)}
 
+[[ -n "${TMUX}" ]] && export TERM=tmux-256color
+
 # Non-standard source logic. 
 [[ -f ${HOME}/.local/bin/mise && -f ${DOTFILES_GIT_REPO}/zsh/mise-include.zsh ]] && source ${DOTFILES_GIT_REPO}/zsh/mise-include.zsh
 
