@@ -75,6 +75,7 @@ bindsym XF86AudioMicMute exec --no-startup-id pactl set-source-mute @DEFAULT_SOU
 # Brightness
 bindsym XF86MonBrightnessUp   exec --no-startup-id brightnessctl set +5%
 bindsym XF86MonBrightnessDown exec --no-startup-id brightnessctl set 5%-
+bindsym $mod+F10 exec --no-startup-id ${HOME}/bin/display-mode toggle
 
 # Print Screen for screenshots
 bindsym Print exec ${HOME}/bin/screenshot.sh full
@@ -88,14 +89,8 @@ floating_modifier $mod
 # or left-clicking anywhere into the window while holding the floating modifier.
 tiling_drag modifier titlebar
 
-# green-on-black window colors
-# class                 border  backgr  text    indicator child_border
-client.focused          #005500 #001a00 #00ff00 #005500   #005500
-client.focused_inactive #003300 #000000 #005500 #003300   #003300
-client.unfocused        #001a00 #000000 #003300 #001a00   #001a00
-client.urgent           #ff0000 #000000 #ff0000 #ff0000   #ff0000
-client.placeholder      #000000 #000000 #003300 #000000   #000000
-client.background       #000000
+# window colors — managed by ~/bin/display-mode
+include colors-active.conf
 
 # thin borders, no title bars
 default_border pixel 2
@@ -237,18 +232,5 @@ bindsym $mod+r mode "resize"
 
 # Start i3bar to display a workspace bar (plus the system information i3status
 # finds out, if available)
-bar {
-        status_command i3status -c ~/.config/i3status/config
-        separator_symbol " · "
-        colors {
-                background #000000
-                statusline #00ff00
-                separator  #003300
-
-                # class            border  backgr  text
-                focused_workspace  #00ff00 #001a00 #00ff00
-                active_workspace   #003300 #000000 #005500
-                inactive_workspace #001a00 #000000 #003300
-                urgent_workspace   #ff0000 #000000 #ff0000
-        }
-}
+# bar + i3status colors managed by ~/bin/display-mode
+include bar-active.conf

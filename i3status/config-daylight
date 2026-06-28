@@ -1,0 +1,57 @@
+# i3status — daylight (tropical palette)
+general {
+        output_format = "i3bar"
+        colors = true
+        interval = 5
+        color_good     = "#2a6040"
+        color_degraded = "#8a6000"
+        color_bad      = "#cc2200"
+        markup = "pango"
+}
+
+order += "wireless _first_"
+order += "ethernet _first_"
+order += "battery all"
+order += "disk /"
+order += "load"
+order += "memory"
+order += "tztime local"
+
+wireless _first_ {
+        format_up = "<span color='#1a7aaa'>wifi</span> %essid %quality"
+        format_down = "<span color='#1a7aaa'>wifi</span> <span color='#cc2200'>down</span>"
+}
+
+ethernet _first_ {
+        format_up = "<span color='#1a7aaa'>eth</span> %ip"
+        format_down = "<span color='#1a7aaa'>eth</span> <span color='#cc2200'>down</span>"
+}
+
+battery all {
+        format = "<span color='#1a7aaa'>bat</span> %status %percentage"
+        format_down = ""
+        status_chr = "↯"
+        status_bat = "▼"
+        status_unk = "?"
+        status_full = "●"
+        low_threshold = 15
+        threshold_type = percentage
+}
+
+disk "/" {
+        format = "<span color='#1a7aaa'>disk</span> %avail"
+}
+
+load {
+        format = "<span color='#1a7aaa'>load</span> %1min"
+}
+
+memory {
+        format = "<span color='#1a7aaa'>mem</span> %used"
+        threshold_degraded = "1G"
+        format_degraded = "<span color='#1a7aaa'>mem</span> <span color='#cc2200'>%available</span>"
+}
+
+tztime local {
+        format = "<span color='#1a7aaa'>%a</span> %Y-%m-%d <span color='#1a7aaa'>·</span> %H:%M"
+}
