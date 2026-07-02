@@ -218,11 +218,15 @@ create_symlinks() {
   _info "Creating symlinks..."
 
   # Ensure directories exist
-  $DRY_RUN || mkdir -p "${HOME}/.ssh" "${HOME}/.config" "${HOME}/bin"
+  $DRY_RUN || mkdir -p "${HOME}/.ssh" "${HOME}/.config" "${HOME}/.config/p10k" "${HOME}/.local/share" "${HOME}/bin"
 
   # Shell
   _link "${DOTFILES}/zsh/.zshrc"        "${HOME}/.zshrc"
   _link "${DOTFILES}/zsh/.p10k.zsh"     "${HOME}/.p10k.zsh"
+
+  # XDG paths referenced by .zshrc
+  _link "${DOTFILES}/zsh/powerlevel10k" "${HOME}/.local/share/powerlevel10k"
+  _link "${HOME}/.p10k.zsh"            "${HOME}/.config/p10k/p10k.zsh"
 
   # Tmux
   _link "${DOTFILES}/tmux/tmux.conf"    "${HOME}/.tmux.conf"
