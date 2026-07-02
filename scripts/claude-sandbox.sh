@@ -6,19 +6,78 @@
 # --ephemeral: throwaway session. Workspace is a fresh mktemp -d, ~/.claude
 # state (projects/, todos/, history) is discarded, but auth (~/.claude.json
 # scratch copy) and plugins (RO) are kept so the session works out of the box.
+#
+# Also doubles as a shared library: `source` this file (e.g. from
+# ~/dev/claude/code-agent/code-agent or ~/dev/claude/infra-agent/infra-agent)
+# to pull in the helpers below without running the sandbox itself — sourcing
+# only defines functions, it does not touch docker/tmux. Shared helpers:
+#   _mount_cache <host-dir> <container-dir>
+#   _resolve_ssh_socket <candidate-path>...
+#   _claude_json_scratch <dest-path>
+#   _claude_creds_mount <out-array-name> <script-name>
 
 set -euo pipefail
 
-IMAGE="claude-sandbox"
-CONTAINER_PREFIX="claude-sandbox"
+# --- shared library functions (safe to source) --------------------------
 
-# Resource limits — override via env, or set CLAUDE_SANDBOX_NO_LIMITS=1 to skip.
-MEMORY="${CLAUDE_SANDBOX_MEMORY:-8g}"
-CPUS="${CLAUDE_SANDBOX_CPUS:-3}"
-PIDS_LIMIT="${CLAUDE_SANDBOX_PIDS_LIMIT:-4096}"
-TMP_SIZE="${CLAUDE_SANDBOX_TMP_SIZE:-2g}"
+_mount_cache() {
+  local host_dir="${1:?}" container_dir="${2:?}"
+  mkdir -p "${host_dir}"
+  volumes+=(-v "${host_dir}":"${container_dir}")
+}
 
-# --- tmux helpers
+# Resolves the first usable ssh-agent socket among the given candidate paths
+# (priority order), setting SSH_SOCK_REAL / SSH_SOCK_DIR / SSH_SOCK_NAME.
+# Callers bind-mount SSH_SOCK_DIR (the socket's *parent directory*, not the
+# socket file itself): a direct file-bind pins the inode at container-start
+# and goes dead when the host agent restarts and recreates the socket at the
+# same path (e.g. an SSH-forwarded agent on reconnect); the directory mount
+# lets the path resolve live inside the container.
+_resolve_ssh_socket() {
+  local cand
+  for cand in "$@"; do
+    [ -n "${cand}" ] && [ -S "${cand}" ] || continue
+    SSH_SOCK_REAL="$(readlink -f "${cand}")"
+    SSH_SOCK_DIR="$(dirname "${SSH_SOCK_REAL}")"
+    SSH_SOCK_NAME="$(basename "${SSH_SOCK_REAL}")"
+    return 0
+  done
+  return 1
+}
+
+# Copies ~/.claude.json to <dest-path> (creating parent dirs) and prints
+# <dest-path>. Caller checks `[ -f ~/.claude.json ]` first and owns its own
+# cleanup strategy (persistent cache path vs mktemp + trap). Claude writes to
+# this file on startup (project state, lastUsed), so an RO mount hangs
+# silently — the scratch copy is meant to be mounted RW instead; the host
+# file (incl. OAuth tokens) stays untouched.
+_claude_json_scratch() {
+  local dest="${1:?_claude_json_scratch: destination path required}"
+  mkdir -p "$(dirname "${dest}")"
+  cp "${HOME}/.claude.json" "${dest}"
+  printf '%s\n' "${dest}"
+}
+
+# Sets the caller's array (by name, via nameref) to a RO mount for
+# ~/.claude/.credentials.json, or leaves it empty if CLAUDE_CODE_OAUTH_TOKEN
+# is set in the environment instead. Returns 1 (and prints an error) if
+# neither auth path is available. Usage:
+#   declare -a CREDS_MOUNT=()
+#   _claude_creds_mount CREDS_MOUNT "code-agent" || exit 1
+_claude_creds_mount() {
+  local -n _out="${1:?_claude_creds_mount: out-array name required}"
+  local script="${2:?_claude_creds_mount: script name required}"
+  local creds="${HOME}/.claude/.credentials.json"
+  _out=()
+  if [ -f "${creds}" ]; then
+    _out=(-v "${creds}":/home/node/.claude/.credentials.json:ro)
+  elif [ -z "${CLAUDE_CODE_OAUTH_TOKEN:-}" ]; then
+    echo "${script}: no Claude credentials at ${creds} and no CLAUDE_CODE_OAUTH_TOKEN set (run 'claude' once on the host to log in, or export a setup-token)." >&2
+    return 1
+  fi
+}
+
+# --- claude-sandbox-specific helpers -------------------------------------
 
 _ask_window_name() {
   local name=""
@@ -31,8 +90,6 @@ _rename_window() {
   local name="${1:?Usage: _rename_window <name>}"
   tmux rename-window "${name}"
 }
-
-# --- sandbox helpers
 
 _ensure_image() {
   local dockerfile="${1:?}" force_rebuild="${2:-0}"
@@ -47,11 +104,15 @@ _ensure_image() {
   fi
 }
 
-_mount_cache() {
-  local host_dir="${1:?}" container_dir="${2:?}"
-  mkdir -p "${host_dir}"
-  volumes+=(-v "${host_dir}":"${container_dir}")
-}
+main() {
+IMAGE="claude-sandbox"
+CONTAINER_PREFIX="claude-sandbox"
+
+# Resource limits — override via env, or set CLAUDE_SANDBOX_NO_LIMITS=1 to skip.
+MEMORY="${CLAUDE_SANDBOX_MEMORY:-8g}"
+CPUS="${CLAUDE_SANDBOX_CPUS:-3}"
+PIDS_LIMIT="${CLAUDE_SANDBOX_PIDS_LIMIT:-4096}"
+TMP_SIZE="${CLAUDE_SANDBOX_TMP_SIZE:-2g}"
 
 # --- args
 
@@ -64,8 +125,6 @@ while [ $# -gt 0 ]; do
     *) break ;;
   esac
 done
-
-# --- main
 
 if [ -n "${TMUX:-}" ] && [ -t 0 ]; then
   window_name=$(_ask_window_name)
@@ -82,7 +141,7 @@ else
 fi
 
 repo_root="${HOME}/dev/me/active/claude/claude-docker-sandbox"
-if [[ -d "${repo_root}" ]]; then 
+if [[ -d "${repo_root}" ]]; then
 	cd ${repo_root}
 	_ensure_image "${repo_root}/Dockerfile" "${force_rebuild}"
 fi
@@ -153,9 +212,7 @@ fi
 # mount that RW. Host ~/.claude.json (incl. OAuth tokens) stays untouched;
 # in-container mutations are discarded next run when the copy is refreshed.
 if [ -f "${HOME}/.claude.json" ]; then
-  claude_json_scratch="${HOME}/.cache/claude-sandbox/claude-json/${host_project_slug}.json"
-  mkdir -p "$(dirname "${claude_json_scratch}")"
-  cp "${HOME}/.claude.json" "${claude_json_scratch}"
+  claude_json_scratch="$(_claude_json_scratch "${HOME}/.cache/claude-sandbox/claude-json/${host_project_slug}.json")"
   # Auto-trust the ephemeral workspace so Claude doesn't prompt on launch.
   if [ "${ephemeral}" = "1" ] && command -v jq >/dev/null 2>&1; then
     tmp_json="$(mktemp)"
@@ -175,10 +232,12 @@ git_templates="${HOME}/.config/dotfiles/git_templates"
 [ -d "${git_templates}" ] && volumes+=(-v "${git_templates}":"${container_home}/.config/dotfiles/git_templates":ro)
 
 # SSH — agent socket + known_hosts/config only. Private keys stay on host.
-ssh_agent_target="/run/host-ssh-agent.sock"
+# Prefer the well-known static path produced by `RemoteForward` in ~/.ssh/config
+# (stable across reconnects), falling back to resolving SSH_AUTH_SOCK.
 ssh_auth_forwarded=0
-if [ -n "${SSH_AUTH_SOCK:-}" ] && [ -S "${SSH_AUTH_SOCK}" ]; then
-  volumes+=(-v "${SSH_AUTH_SOCK}":"${ssh_agent_target}")
+if _resolve_ssh_socket "/run/user/$(id -u)/ssh-agent.socket" "${SSH_AUTH_SOCK:-}"; then
+  volumes+=(-v "${SSH_SOCK_DIR}":"${SSH_SOCK_DIR}")
+  ssh_agent_target="${SSH_SOCK_REAL}"
   ssh_auth_forwarded=1
 fi
 [ -f "${HOME}/.ssh/known_hosts" ] && volumes+=(-v "${HOME}/.ssh/known_hosts":"${container_home}/.ssh/known_hosts":ro)
@@ -242,3 +301,8 @@ ${run_prefix} docker run --rm ${tty_flag} --init \
   -w "${project_dir}" \
   --network=host \
   "${IMAGE}" --dangerously-skip-permissions "$@"
+}
+
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+  main "$@"
+fi
