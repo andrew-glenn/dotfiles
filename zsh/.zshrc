@@ -181,3 +181,8 @@ kag() {
 }
 alias assistant="kiro-cli chat --agent assistant"
 alias cat="batcat"
+
+# refresh prompt immediately on directory change (useful for zle widgets that cd)
+_chpwd_refresh_prompt() { zle && zle reset-prompt }
+autoload -Uz add-zsh-hook
+add-zsh-hook chpwd _chpwd_refresh_prompt
