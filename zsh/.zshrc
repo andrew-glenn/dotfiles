@@ -180,4 +180,3 @@ kag() {
   fi
 }
 alias assistant="kiro-cli chat --agent assistant"
-alias cat="batcat"
