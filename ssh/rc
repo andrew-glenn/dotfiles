@@ -1,7 +1,7 @@
 #!/usr/bin/zsh
 if [ ! -z "${SSH_AUTH_SOCK}" ]; then 
-	if [ -L ~/.ssh/ssh_auth_sock ]; then
-		rm ~/.ssh/ssh_auth_sock
+	if [ -L ~/.ssh/socket/ssh_auth_sock ]; then
+		rm ~/.ssh/socket/ssh_auth_sock
 	fi
-	ln -s ${SSH_AUTH_SOCK} ~/.ssh/ssh_auth_sock
+	ln -s ${SSH_AUTH_SOCK} ~/.ssh/socket/ssh_auth_sock
 fi

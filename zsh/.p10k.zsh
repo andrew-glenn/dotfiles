@@ -25,6 +25,10 @@
   # restarting zsh. Edit ~/.p10k.zsh and type `source ~/.p10k.zsh`.
   unset -m '(POWERLEVEL9K_*|DEFAULT_USER)~POWERLEVEL9K_GITSTATUS_DIR'
 
+  # Use plain `git` for the prompt instead of the resident gitstatusd daemon.
+  # Lower memory (no per-shell daemon); slightly slower vcs segment on huge repos.
+  typeset -g POWERLEVEL9K_DISABLE_GITSTATUS=true
+
   # Zsh >= 5.1 is required.
   [[ $ZSH_VERSION == (5.<1->*|<6->.*) ]] || return
 

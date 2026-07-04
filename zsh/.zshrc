@@ -81,7 +81,7 @@ function tn() {
     tmux attach-session -t "$name"
   fi
 }
-
+alias tn=" tn"
 ta() {
   local s="${1:-main}"
   tmux attach -d -t "$s" 2>/dev/null || tmux new-session -s "$s"
