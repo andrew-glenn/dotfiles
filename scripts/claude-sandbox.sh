@@ -15,7 +15,7 @@
 #   _resolve_ssh_socket <candidate-path>...
 #   _claude_json_scratch <dest-path>
 #   _claude_creds_mount <out-array-name> <script-name>
-#   _gitconfig_mounts <container-home>
+#   _gitconfig_mounts <out-array-name> <container-home>
 
 set -euo pipefail
 
@@ -79,13 +79,14 @@ _claude_creds_mount() {
 }
 
 # Appends RO bind-mounts for ~/.gitconfig, ~/.config/git, and git_templates
-# to the caller's `volumes` array (same array _mount_cache writes to).
+# to the caller's named array (same nameref pattern as _claude_creds_mount).
 _gitconfig_mounts() {
-  local container_home="${1:?_gitconfig_mounts: container home required}"
-  [ -f "${HOME}/.gitconfig" ] && volumes+=(-v "${HOME}/.gitconfig":"${container_home}/.gitconfig":ro)
-  [ -d "${HOME}/.config/git" ] && volumes+=(-v "${HOME}/.config/git":"${container_home}/.config/git":ro)
+  local -n _out="${1:?_gitconfig_mounts: out-array name required}"
+  local container_home="${2:?_gitconfig_mounts: container home required}"
+  [ -f "${HOME}/.gitconfig" ] && _out+=(-v "${HOME}/.gitconfig":"${container_home}/.gitconfig":ro)
+  [ -d "${HOME}/.config/git" ] && _out+=(-v "${HOME}/.config/git":"${container_home}/.config/git":ro)
   local git_templates="${HOME}/.config/dotfiles/git_templates"
-  [ -d "${git_templates}" ] && volumes+=(-v "${git_templates}":"${container_home}/.config/dotfiles/git_templates":ro)
+  [ -d "${git_templates}" ] && _out+=(-v "${git_templates}":"${container_home}/.config/dotfiles/git_templates":ro)
 }
 
 # --- claude-sandbox-specific helpers -------------------------------------
@@ -235,7 +236,7 @@ if [ -f "${HOME}/.claude.json" ]; then
 fi
 
 # Git config — RO
-_gitconfig_mounts "${container_home}"
+_gitconfig_mounts volumes "${container_home}"
 
 # SSH — agent socket + known_hosts/config only. Private keys stay on host.
 # Prefer the well-known static path produced by `RemoteForward` in ~/.ssh/config
