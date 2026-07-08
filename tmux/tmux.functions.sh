@@ -217,6 +217,57 @@ _switch_prev_session() {
   tmux switch-client -l
 }
 
+_zen() {
+  local current
+  current=$(tmux show -qv @zen 2>/dev/null)
+
+  if [ "${current}" = "on" ]; then
+    # Tear down padding panes
+    local left right
+    left=$(tmux show -qv @zen_left)
+    right=$(tmux show -qv @zen_right)
+    tmux kill-pane -t "${left}" 2>/dev/null
+    tmux kill-pane -t "${right}" 2>/dev/null
+    tmux set -u @zen
+    tmux set -u @zen_left
+    tmux set -u @zen_right
+    # Restore border styles
+    tmux set pane-border-style "$(tmux show -qv @zen_border)"
+    tmux set pane-active-border-style "$(tmux show -qv @zen_aborder)"
+    tmux set -u @zen_border
+    tmux set -u @zen_aborder
+    tmux set status on
+    tmux display "Zen: [off]"
+  else
+    local main
+    main=$(tmux display -p '#{pane_id}')
+
+    # Left padding pane (tail -f /dev/null works on macOS; sleep infinity does not)
+    local left
+    left=$(tmux split-window -hbdP -l 20% -t "${main}" -F '#{pane_id}' "tail -f /dev/null")
+
+    # Right padding pane
+    local right
+    right=$(tmux split-window -hdP -l 20% -t "${main}" -F '#{pane_id}' "tail -f /dev/null")
+
+    # Focus back to main
+    tmux select-pane -t "${main}"
+
+    # Mute pane borders to near-invisible
+    tmux set @zen_border "$(tmux show -qv pane-border-style)"
+    tmux set @zen_aborder "$(tmux show -qv pane-active-border-style)"
+    tmux set pane-border-style "fg=colour236"
+    tmux set pane-active-border-style "fg=colour236"
+
+    # Store state
+    tmux set @zen on
+    tmux set @zen_left "${left}"
+    tmux set @zen_right "${right}"
+    tmux set status off
+    tmux display "Zen: [on]"
+  fi
+}
+
 _launch_assistant() {
   command -v kiro-cli >/dev/null 2>&1 || return 0
   local cwd
@@ -259,6 +310,9 @@ case "${1}" in
     ;;
   "assistant")
     _launch_assistant
+    ;;
+  "zen")
+    _zen
     ;;
   *)
     exit 1
