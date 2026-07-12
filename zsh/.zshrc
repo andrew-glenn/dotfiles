@@ -182,6 +182,8 @@ source_if_exists ${HOME}/.zshrc.local
 
 # conditional alias
 [[ -f ${DOTFILES_GIT_REPO}/scripts/claude-sandbox.sh && ! -e ${HOME}/.config/claude-local-only ]] && alias claude="${DOTFILES_GIT_REPO}/scripts/claude-sandbox.sh"
+
+[[ -f /usr/bin/nvim ]] && alias vim=/usr/bin/nvim
 # aliases
 alias ll="ls -lah"
 # hooks
