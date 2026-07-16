@@ -268,11 +268,18 @@ _zen() {
   fi
 }
 
-_launch_assistant() {
+_nina() {
   command -v kiro-cli >/dev/null 2>&1 || return 0
-  local cwd
-  cwd="$(tmux display-message -p '#{pane_current_path}')"
-  tmux new-window -c "${cwd}" -n "assistant" "kiro-cli chat --agent assistant"
+  if tmux has-session -t nina 2>/dev/null; then
+    tmux switch-client -t nina
+    return
+  fi
+  tmux new-session -d -s nina 'kiro-cli chat --agent nina'
+  tmux set-option -t nina remain-on-exit on
+  tmux set-hook -t nina pane-died 'respawn-window -t nina'
+  tmux set-hook -t nina session-closed \
+    'run-shell "if [ -f /tmp/.kill-nina ]; then rm -f /tmp/.kill-nina; else sleep 0.5 && tmux new-session -d -s nina \"kiro-cli chat --agent nina\" && tmux set-option -t nina remain-on-exit on && tmux set-hook -t nina pane-died \"respawn-window -t nina\"; fi"'
+  tmux switch-client -t nina
 }
 
 # ---
@@ -308,8 +315,8 @@ case "${1}" in
   "theme")
     _host_specific_theme
     ;;
-  "assistant")
-    _launch_assistant
+  "nina")
+    _nina
     ;;
   "zen")
     _zen

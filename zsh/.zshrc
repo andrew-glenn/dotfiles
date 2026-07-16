@@ -87,6 +87,28 @@ ta() {
   tmux attach -d -t "$s" 2>/dev/null || tmux new-session -s "$s"
 }
 
+nina() {
+  if tmux has-session -t nina 2>/dev/null; then
+    echo "nina session already running"
+    [[ -n "$TMUX" ]] && tmux switch-client -t nina || tmux attach -t nina
+    return
+  fi
+  tmux new-session -d -s nina 'kiro-cli chat --agent nina'
+  tmux set-option -t nina remain-on-exit on
+  tmux set-hook -t nina pane-died 'respawn-window -t nina'
+  tmux set-hook -t nina session-closed \
+    'run-shell "if [ -f /tmp/.kill-nina ]; then rm -f /tmp/.kill-nina; else sleep 0.5 && tmux new-session -d -s nina \"kiro-cli chat --agent nina\" && tmux set-option -t nina remain-on-exit on && tmux set-hook -t nina pane-died \"respawn-window -t nina\"; fi"'
+  [[ -n "$TMUX" ]] && tmux switch-client -t nina || tmux attach -t nina
+}
+
+kill-nina() {
+  read -q "?Kill the nina session for real? [y/N] " || { echo "\nSpared."; return; }
+  echo
+  touch /tmp/.kill-nina
+  tmux kill-session -t nina
+  echo "Dead. For real."
+}
+
 s() {
   local host="${1:?Usage: s <host>}"
   local session="${host%%.*}"
@@ -179,8 +201,8 @@ kag() {
     KIRO_AGENT=AG ~/.kiro/hooks/extract-transcript.sh "$PWD" &!
   fi
 }
-alias assistant="kiro-cli chat --agent assistant"
-alias cat="batcat"
+alias nina="kiro-cli chat --agent nina"
+(( $+commands[bat] )) && alias cat="bat" || { (( $+commands[batcat] )) && alias cat="batcat" }
 
 # refresh prompt immediately on directory change (useful for zle widgets that cd)
 _chpwd_refresh_prompt() { zle && zle reset-prompt }
