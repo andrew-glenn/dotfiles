@@ -282,6 +282,23 @@ _nina() {
   tmux switch-client -t nina
 }
 
+_switcher() {
+  local target
+  target="$(tmux list-windows -a -F '#{session_name} #{window_index} #{window_name} #{window_active}' \
+    | while read -r sess win name active; do
+        if [ "${active}" = "1" ]; then
+          printf "\033[1;34m%s\033[0m:\033[0;33m%s\033[0m  %s \033[0;90m(active)\033[0m\n" "$sess" "$win" "$name"
+        else
+          printf "\033[1;34m%s\033[0m:\033[0;33m%s\033[0m  %s\n" "$sess" "$win" "$name"
+        fi
+      done \
+    | fzf --ansi --reverse --prompt='switch to › ')" || return 0
+  # Strip ANSI and extract session:window
+  local dest
+  dest="$(printf '%s' "$target" | sed $'s/\033\\[[0-9;]*m//g' | awk '{print $1}')"
+  tmux switch-client -t "${dest}"
+}
+
 # ---
 
 # Dispatcher only fires when the script is invoked with a subcommand;
@@ -320,6 +337,9 @@ case "${1}" in
     ;;
   "zen")
     _zen
+    ;;
+  "switcher")
+    _switcher
     ;;
   *)
     exit 1
