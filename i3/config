@@ -53,7 +53,7 @@ exec --no-startup-id dunst
 # load Xresources + set X root cursor
 exec_always --no-startup-id xrdb -merge ${HOME}/.Xresources
 exec_always --no-startup-id xsetroot -cursor_name left_ptr
-
+exec --no-startup-id dbus-launch --exit-with-session sh -c 'XDG_CURRENT_DESKTOP=i3 /usr/libexec/xdg-desktop-portal & /usr/libexec/xdg-desktop-portal-gtk &'
 # gaps
 gaps inner 10
 gaps outer 4
