@@ -43,6 +43,65 @@ homebrew_stuff() {
   brew install --cask font-hack-nerd-font
 }
 
+archlinux_stuff() {
+  [ -f /etc/arch-release ] || return 0
+
+  local xdg_config="${XDG_CONFIG_HOME:-$HOME/.config}"
+
+  # -- packages needed by the i3 desktop configs in this repo --
+  local pkgs=(
+    # fonts
+    ttf-hack-nerd          # Hack Nerd Font — used by urxvt, kitty, ghostty, i3
+    # i3 desktop extras (beyond the base set in arch-bootstrap.sh)
+    rofi                   # app launcher
+    picom                  # compositor (transparency, fading)
+    dunst                  # notification daemon
+    feh                    # wallpaper setter
+    dex                    # XDG autostart
+    xautolock              # idle auto-lock
+    brightnessctl          # laptop brightness keys
+    network-manager-applet # nm-applet systray icon
+    pulseaudio             # audio (pactl for volume keys)
+    rxvt-unicode           # urxvt terminal
+    # neovim
+    neovim
+    # zsh
+    zsh
+  )
+  # Only install what isn't already present.
+  local to_install=()
+  for p in "${pkgs[@]}"; do
+    pacman -Qi "$p" &>/dev/null || to_install+=("$p")
+  done
+  if [ ${#to_install[@]} -gt 0 ]; then
+    echo "Installing: ${to_install[*]}"
+    sudo pacman -S --needed --noconfirm "${to_install[@]}"
+  fi
+
+  # -- symlinks --
+  # i3 window manager
+  _conditionally_create_symlink "$DOTFILES/i3" "$xdg_config/i3"
+
+  # i3status bar
+  _conditionally_create_symlink "$DOTFILES/i3status" "$xdg_config/i3status"
+
+  # rofi launcher
+  _conditionally_create_symlink "$DOTFILES/rofi" "$xdg_config/rofi"
+
+  # picom compositor
+  _conditionally_create_symlink "$DOTFILES/picom" "$xdg_config/picom"
+
+  # X11: .xinitrc and .Xresources
+  _conditionally_create_symlink "$DOTFILES/xenv/.xinitrc" "$HOME/.xinitrc"
+  _conditionally_create_symlink "$DOTFILES/xenv/.Xresources" "$HOME/.Xresources"
+
+  # kitty terminal
+  _conditionally_create_symlink "$DOTFILES/kitty" "$xdg_config/kitty"
+
+  # neovim
+  _conditionally_create_symlink "$DOTFILES/neovim" "$xdg_config/nvim"
+}
+
 ssh_stuff() {
   mkdir -p -m 700 "$HOME/.ssh"
   _conditionally_create_symlink "$DOTFILES/ssh/rc" "$HOME/.ssh/rc"
@@ -76,6 +135,7 @@ main() {
   git -C "$DOTFILES" submodule update --init --recursive
 
   homebrew_stuff
+  archlinux_stuff
   ssh_stuff
   vim_stuff
   zsh_stuff
