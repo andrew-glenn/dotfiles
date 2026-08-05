@@ -235,23 +235,22 @@ echo "${USERNAME}:${PW}" | chpasswd
 rm -f /root/.install-pw
 sed -i 's/^# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
 
-# -- initramfs (LUKS needs the 'encrypt' hook) --
+# -- initramfs (LUKS needs the 'sd-encrypt' hook) --
 if [[ "${USE_LUKS}" == "yes" ]]; then
-  # Current default HOOKS (mkinitcpio ≥38):
-  #   HOOKS=(base udev autodetect microcode modconf kms keyboard keymap consolefont block filesystems fsck)
+  # Default HOOKS (mkinitcpio ≥38, systemd-based initramfs):
+  #   HOOKS=(base systemd autodetect microcode modconf kms keyboard sd-vconsole block filesystems fsck)
   #
-  # For LUKS we need 'encrypt' between 'block' and 'filesystems'.  The
-  # required ordering is: keyboard → keymap → block → encrypt → filesystems.
-  # keyboard/keymap/block are already present in the defaults, so we just
-  # splice 'encrypt' in front of 'filesystems'.
-  sed -i 's/^\(HOOKS=(.*\) filesystems/\1 encrypt filesystems/' /etc/mkinitcpio.conf
+  # For LUKS we need 'sd-encrypt' between 'block' and 'filesystems'.
+  # The busybox 'encrypt' hook does NOT work with the systemd-based init.
+  sed -i 's/^\(HOOKS=(.*\) filesystems/\1 sd-encrypt filesystems/' /etc/mkinitcpio.conf
 fi
 mkinitcpio -P
 
 # -- bootloader --
 if [[ "${USE_LUKS}" == "yes" ]]; then
-  # Tell the initramfs 'encrypt' hook how to unlock the root partition
-  sed -i "s|^GRUB_CMDLINE_LINUX=\"\"|GRUB_CMDLINE_LINUX=\"cryptdevice=UUID=${LUKS_UUID}:cryptroot root=/dev/mapper/cryptroot\"|" /etc/default/grub
+  # Tell the initramfs 'sd-encrypt' hook how to unlock the root partition.
+  # sd-encrypt uses rd.luks.name= syntax (not cryptdevice=).
+  sed -i "s|^GRUB_CMDLINE_LINUX=\"\"|GRUB_CMDLINE_LINUX=\"rd.luks.name=${LUKS_UUID}=cryptroot root=/dev/mapper/cryptroot\"|" /etc/default/grub
   if [[ "${BOOT_MODE}" == "bios" ]]; then
     # BIOS: /boot is inside the encrypted root, so GRUB must unlock LUKS
     echo 'GRUB_ENABLE_CRYPTODISK=y' >> /etc/default/grub
