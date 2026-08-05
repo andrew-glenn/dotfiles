@@ -6,11 +6,13 @@
 # Does:
 #   - Destructively partitions a chosen disk
 #   - ext4 root (+ ESP if UEFI), auto-detected boot mode, GRUB
+#   - Optional LUKS2 full-disk encryption (prompted)
 #   - i3 minimal WM, zram swap, NetworkManager
+#   - Wireless networking tools (iwd) for post-install Wi-Fi
 #   - Prompts for hostname / user / password / timezone / locale
 #
 # Does NOT:
-#   - Handle dual boot, LUKS encryption, RAID, or multi-disk layouts
+#   - Handle dual boot, RAID, or multi-disk layouts
 #
 set -euo pipefail
 
@@ -23,6 +25,13 @@ ask() {
   local prompt="$1" default="${2:-}" reply
   read -rp "${prompt}${default:+ [$default]}: " reply
   echo "${reply:-$default}"
+}
+
+ask_yn() {
+  local prompt="$1" default="${2:-n}" reply
+  read -rp "${prompt} [y/N]: " reply
+  reply="${reply:-$default}"
+  [[ "${reply,,}" == y* ]]
 }
 
 # Return the Nth partition device path for a given disk.
@@ -65,6 +74,20 @@ echo "!! WARNING !! This will ERASE ALL DATA on $TARGET_DISK"
 CONFIRM=$(ask "Type the disk path again to confirm")
 [[ "$CONFIRM" == "$TARGET_DISK" ]] || die "Confirmation did not match. Aborting."
 
+# -- encryption --
+USE_LUKS="no"
+if ask_yn "Enable LUKS2 full-disk encryption?"; then
+  USE_LUKS="yes"
+  echo
+  echo "You can use the same password as your login, or a separate disk passphrase."
+  while true; do
+    read -rsp "LUKS passphrase: " LUKS_PASS; echo
+    read -rsp "Confirm LUKS passphrase: " LUKS_PASS2; echo
+    [[ "$LUKS_PASS" == "$LUKS_PASS2" && -n "$LUKS_PASS" ]] && break
+    echo "Passphrases didn't match or were empty, try again."
+  done
+fi
+
 HOSTNAME=$(ask "Hostname" "archbox")
 USERNAME=$(ask "Username to create" "arch")
 
@@ -104,6 +127,22 @@ fi
 partprobe "$TARGET_DISK"
 sleep 2  # let the kernel finish re-reading the partition table
 
+# ---------- LUKS encryption (optional) ----------
+
+LUKS_UUID=""
+if [[ "$USE_LUKS" == "yes" ]]; then
+  log "Setting up LUKS2 encryption on $ROOT_PART..."
+  printf '%s' "$LUKS_PASS" | cryptsetup luksFormat --type luks2 \
+    --cipher aes-xts-plain64 --key-size 512 --hash sha256 \
+    --iter-time 5000 --batch-mode "$ROOT_PART" -
+
+  printf '%s' "$LUKS_PASS" | cryptsetup open "$ROOT_PART" cryptroot -
+
+  LUKS_UUID=$(blkid -s UUID -o value "$ROOT_PART")
+  # From here on, the "root device" is the opened mapper device
+  ROOT_PART="/dev/mapper/cryptroot"
+fi
+
 # ---------- formatting ----------
 
 log "Formatting..."
@@ -122,6 +161,9 @@ log "Installing base system (this takes a while)..."
 PACKAGES=(
   base base-devel linux linux-firmware
   networkmanager
+  iwd                    # Wi-Fi backend (iwctl); NetworkManager can use it
+  wireless_tools         # iwconfig and friends
+  wpa_supplicant         # fallback WPA support
   sudo vim git curl
   grub
   xorg-server xorg-xinit
@@ -156,6 +198,8 @@ arch-chroot /mnt /usr/bin/env \
   USERNAME="$USERNAME" \
   BOOT_MODE="$BOOT_MODE" \
   TARGET_DISK="$TARGET_DISK" \
+  USE_LUKS="$USE_LUKS" \
+  LUKS_UUID="$LUKS_UUID" \
   bash -s <<'CHROOT_EOF'
 set -euo pipefail
 
@@ -185,7 +229,25 @@ echo "${USERNAME}:${PW}" | chpasswd
 rm -f /root/.install-pw
 sed -i 's/^# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
 
+# -- initramfs (LUKS needs the 'encrypt' hook) --
+if [[ "${USE_LUKS}" == "yes" ]]; then
+  # Insert 'encrypt' hook before 'filesystems' in the HOOKS array.
+  # Default mkinitcpio HOOKS line:
+  #   HOOKS=(base udev autodetect modconf kms keyboard keymap consolefont block filesystems fsck)
+  # We need 'encrypt' right before 'filesystems' and 'keyboard' before 'encrypt'.
+  # 'keyboard' is usually already present; ensure it is, then add 'encrypt'.
+  sed -i 's/^HOOKS=(\(.*\)\bfilesystems\b/HOOKS=(\1encrypt filesystems/' /etc/mkinitcpio.conf
+  mkinitcpio -P
+fi
+
 # -- bootloader --
+if [[ "${USE_LUKS}" == "yes" ]]; then
+  # Tell GRUB how to unlock the encrypted root partition
+  sed -i "s|^GRUB_CMDLINE_LINUX=\"\"|GRUB_CMDLINE_LINUX=\"cryptdevice=UUID=${LUKS_UUID}:cryptroot root=/dev/mapper/cryptroot\"|" /etc/default/grub
+  # Enable GRUB's cryptodisk support so it can read encrypted /boot (if on same partition)
+  echo 'GRUB_ENABLE_CRYPTODISK=y' >> /etc/default/grub
+fi
+
 if [[ "${BOOT_MODE}" == "uefi" ]]; then
   grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB
 else
@@ -202,6 +264,14 @@ ZRAM
 
 # -- services --
 systemctl enable NetworkManager
+systemctl enable iwd   # Wi-Fi backend — available immediately after boot
+
+# -- configure NetworkManager to use iwd as its Wi-Fi backend --
+mkdir -p /etc/NetworkManager/conf.d
+cat > /etc/NetworkManager/conf.d/wifi-backend.conf <<NMCONF
+[device]
+wifi.backend=iwd
+NMCONF
 
 # -- minimal .xinitrc so 'startx' launches i3 --
 cat > "/home/${USERNAME}/.xinitrc" <<XINIT
@@ -214,7 +284,16 @@ CHROOT_EOF
 rm -f /mnt/root/.install-pw
 
 log "Done. Unmount and reboot when ready:"
-echo "    umount -R /mnt"
-echo "    reboot"
+if [[ "$USE_LUKS" == "yes" ]]; then
+  echo "    umount -R /mnt"
+  echo "    cryptsetup close cryptroot"
+  echo "    reboot"
+  echo
+  echo "You will be prompted for your LUKS passphrase on every boot."
+else
+  echo "    umount -R /mnt"
+  echo "    reboot"
+fi
 echo
 echo "After first login, run 'startx' to launch i3."
+echo "Wi-Fi: use 'nmcli' or 'iwctl' to connect to wireless networks."
