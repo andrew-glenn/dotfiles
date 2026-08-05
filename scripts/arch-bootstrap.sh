@@ -132,13 +132,19 @@ sleep 2  # let the kernel finish re-reading the partition table
 LUKS_UUID=""
 if [[ "$USE_LUKS" == "yes" ]]; then
   log "Setting up LUKS2 encryption on $ROOT_PART..."
+  LUKS_EXTRA_ARGS=()
+  if [[ "$BOOT_MODE" == "bios" ]]; then
+    # In BIOS mode /boot lives inside the encrypted root, so GRUB itself must
+    # unlock the LUKS volume.  GRUB 2.12 only supports PBKDF2 (not Argon2id).
+    LUKS_EXTRA_ARGS=(--pbkdf pbkdf2)
+  fi
   printf '%s' "$LUKS_PASS" | cryptsetup luksFormat --type luks2 \
     --cipher aes-xts-plain64 --key-size 512 --hash sha256 \
-    --iter-time 5000 --batch-mode "$ROOT_PART" -
+    --iter-time 5000 --batch-mode "${LUKS_EXTRA_ARGS[@]}" "$ROOT_PART" -
 
   printf '%s' "$LUKS_PASS" | cryptsetup open "$ROOT_PART" cryptroot -
 
-  LUKS_UUID=$(blkid -s UUID -o value "$ROOT_PART")
+  LUKS_UUID=$(cryptsetup luksUUID "$ROOT_PART")
   # From here on, the "root device" is the opened mapper device
   ROOT_PART="/dev/mapper/cryptroot"
 fi
@@ -231,21 +237,25 @@ sed -i 's/^# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
 
 # -- initramfs (LUKS needs the 'encrypt' hook) --
 if [[ "${USE_LUKS}" == "yes" ]]; then
-  # Insert 'encrypt' hook before 'filesystems' in the HOOKS array.
-  # Default mkinitcpio HOOKS line:
-  #   HOOKS=(base udev autodetect modconf kms keyboard keymap consolefont block filesystems fsck)
-  # We need 'encrypt' right before 'filesystems' and 'keyboard' before 'encrypt'.
-  # 'keyboard' is usually already present; ensure it is, then add 'encrypt'.
-  sed -i 's/^HOOKS=(\(.*\)\bfilesystems\b/HOOKS=(\1encrypt filesystems/' /etc/mkinitcpio.conf
-  mkinitcpio -P
+  # Current default HOOKS (mkinitcpio ≥38):
+  #   HOOKS=(base udev autodetect microcode modconf kms keyboard keymap consolefont block filesystems fsck)
+  #
+  # For LUKS we need 'encrypt' between 'block' and 'filesystems'.  The
+  # required ordering is: keyboard → keymap → block → encrypt → filesystems.
+  # keyboard/keymap/block are already present in the defaults, so we just
+  # splice 'encrypt' in front of 'filesystems'.
+  sed -i 's/^\(HOOKS=(.*\) filesystems/\1 encrypt filesystems/' /etc/mkinitcpio.conf
 fi
+mkinitcpio -P
 
 # -- bootloader --
 if [[ "${USE_LUKS}" == "yes" ]]; then
-  # Tell GRUB how to unlock the encrypted root partition
+  # Tell the initramfs 'encrypt' hook how to unlock the root partition
   sed -i "s|^GRUB_CMDLINE_LINUX=\"\"|GRUB_CMDLINE_LINUX=\"cryptdevice=UUID=${LUKS_UUID}:cryptroot root=/dev/mapper/cryptroot\"|" /etc/default/grub
-  # Enable GRUB's cryptodisk support so it can read encrypted /boot (if on same partition)
-  echo 'GRUB_ENABLE_CRYPTODISK=y' >> /etc/default/grub
+  if [[ "${BOOT_MODE}" == "bios" ]]; then
+    # BIOS: /boot is inside the encrypted root, so GRUB must unlock LUKS
+    echo 'GRUB_ENABLE_CRYPTODISK=y' >> /etc/default/grub
+  fi
 fi
 
 if [[ "${BOOT_MODE}" == "uefi" ]]; then
