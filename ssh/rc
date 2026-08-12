@@ -1,4 +1,4 @@
-#!/usr/bin/zsh
+#!/usr/bin/env zsh
 if [ ! -z "${SSH_AUTH_SOCK}" ]; then 
 	if [ -L ~/.ssh/socket/ssh_auth_sock ]; then
 		rm ~/.ssh/socket/ssh_auth_sock
