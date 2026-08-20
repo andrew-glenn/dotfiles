@@ -282,6 +282,56 @@ _nina() {
   tmux switch-client -t nina
 }
 
+_move_window() {
+  local src_pane_id cur_sess cur_win US BLUE YELLOW DIM RST selection clean type
+
+  src_pane_id=$(tmux display-message -p '#{pane_id}')
+  cur_sess=$(tmux display-message -p '#S')
+  cur_win=$(tmux display-message -p '#I')
+
+  US=$'\x1f'
+  BLUE="\033[1;34m"
+  YELLOW="\033[0;33m"
+  DIM="\033[0;90m"
+  RST="\033[0m"
+
+  selection=$(
+  {
+      tmux list-sessions -F '#S' | while read -r s; do
+          printf "${BLUE}session${RST}  %-20s${US}_${US}_\n" "$s"
+      done
+
+      tmux list-panes -a -F "#{session_name}${US}#{window_index}${US}#{pane_index}${US}#{pane_current_command}${US}#{pane_id}" | \
+      while IFS="$US" read -r sess win pane cmd pane_id; do
+          [[ "$sess:$win" == "$cur_sess:$cur_win" ]] && continue
+          printf "${YELLOW}pane${RST}     %-20s ${DIM}%s${RST}${US}%s${US}%s\n" \
+              "${sess}:${win}.${pane}" "$cmd" "$cmd" "$pane_id"
+      done
+  } | fzf --ansi --prompt='move to › ' --delimiter="$US" --with-nth=1
+  ) || return 0
+
+  clean=$(printf '%s' "$selection" | sed $'s/\033\\[[0-9;]*m//g')
+  type=$(echo "$clean" | awk '{print $1}')
+
+  if [[ "$type" == "session" ]]; then
+      local target_session
+      target_session=$(echo "$clean" | awk '{print $2}')
+      tmux move-window -t "${target_session}:"
+
+  elif [[ "$type" == "pane" ]]; then
+      local target_cmd target_pane_id
+      target_cmd=$(printf '%s' "$selection" | awk -F "$US" '{print $2}' | xargs)
+      target_pane_id=$(printf '%s' "$selection" | awk -F "$US" '{print $3}' | xargs)
+
+      if [[ "$target_cmd" =~ ^(zsh|bash|fish|sh|dash)$ ]]; then
+          tmux swap-pane -s "$src_pane_id" -t "$target_pane_id"
+          tmux kill-pane -t "$target_pane_id" 2>/dev/null || true
+      else
+          tmux join-pane -v -s "$src_pane_id" -t "$target_pane_id"
+      fi
+  fi
+}
+
 _switcher() {
   local target
   target="$(tmux list-windows -a -F '#{session_name} #{window_index} #{window_name} #{window_active}' \
@@ -340,6 +390,9 @@ case "${1}" in
     ;;
   "switcher")
     _switcher
+    ;;
+  "move_window")
+    _move_window
     ;;
   *)
     exit 1
