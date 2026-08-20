@@ -1,0 +1,28 @@
+# Colors — outdoor dark (high contrast, still dark, fights glare)
+background = #1a1a1a
+foreground = #ffffff
+cursor-color = #ffb840
+cursor-style = block
+cursor-style-blink = true
+selection-background = #6a5040
+selection-foreground = #ffffff
+
+# Normal colors (0-7)
+palette = 0=#4a4040
+palette = 1=#ff5555
+palette = 2=#7aff3a
+palette = 3=#ffcc00
+palette = 4=#50d0ff
+palette = 5=#e070ff
+palette = 6=#00ffc8
+palette = 7=#f0e8e0
+
+# Bright colors (8-15)
+palette = 8=#7a6a60
+palette = 9=#ff7878
+palette = 10=#98ff5c
+palette = 11=#ffdd44
+palette = 12=#70e0ff
+palette = 13=#f090ff
+palette = 14=#40ffd8
+palette = 15=#ffffff

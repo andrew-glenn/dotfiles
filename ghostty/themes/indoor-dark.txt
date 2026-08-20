@@ -1,0 +1,28 @@
+# Colors — indoor dark (current default)
+background = #0a0a0a
+foreground = #f4e8da
+cursor-color = #f0a050
+cursor-style = block
+cursor-style-blink = true
+selection-background = #5a4030
+selection-foreground = #fff8f0
+
+# Normal colors (0-7)
+palette = 0=#3d3028
+palette = 1=#f04848
+palette = 2=#6cd42e
+palette = 3=#f0b020
+palette = 4=#38b0f0
+palette = 5=#d060f0
+palette = 6=#00d4a8
+palette = 7=#e0d4c6
+
+# Bright colors (8-15)
+palette = 8=#5c4a3e
+palette = 9=#ff6060
+palette = 10=#80ee44
+palette = 11=#ffc830
+palette = 12=#50c8ff
+palette = 13=#e878ff
+palette = 14=#20eec0
+palette = 15=#f5ece0
