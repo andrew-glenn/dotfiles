@@ -10,7 +10,7 @@ _host_specific_theme() {
     *radioshack*)
       text=255; dim=89;  accent=198; actv=201; label="hot pink" ;;
     *)
-      text=223; dim=94;  accent=208; actv=220; label="amber (Mr. Robot)" ;;
+      text=148; dim=22;  accent=118; actv=161; label="matrix/molokai" ;;
   esac
 
   tmux set -g @c_text   "colour${text}"
