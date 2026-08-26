@@ -332,6 +332,29 @@ _move_window() {
   fi
 }
 
+_new_session() {
+  local start_dir="${1:-$HOME}"
+  local out query pick name
+  out="$(tmux list-sessions -F '#S' 2>/dev/null \
+    | fzf --reverse --no-sort --print-query \
+          --header='Type a name to create, or pick one to switch' \
+          --prompt='new session › ')"
+
+  query="$(printf '%s\n' "${out}" | sed -n 1p)"
+  pick="$(printf '%s\n' "${out}" | sed -n 2p)"
+  name="${pick:-${query}}"
+  name="$(printf '%s' "${name}" | tr '.:' '__' | tr -d '[:space:]')"
+  [ -z "${name}" ] && return 0
+
+  if tmux has-session -t "=${name}" 2>/dev/null; then
+    tmux switch-client -t "=${name}"
+    return 0
+  fi
+
+  tmux new-session -d -s "${name}" -c "${start_dir}"
+  tmux switch-client -t "=${name}"
+}
+
 _switcher() {
   local target
   target="$(tmux list-windows -a -F '#{session_name} #{window_index} #{window_name} #{window_active}' \
@@ -393,6 +416,9 @@ case "${1}" in
     ;;
   "move_window")
     _move_window
+    ;;
+  "new_session")
+    _new_session "${2}"
     ;;
   *)
     exit 1
