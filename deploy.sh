@@ -130,6 +130,24 @@ tmux_stuff() {
   fi
 }
 
+lazygit_stuff() {
+  # lazygit's config dir differs per platform, so ask the binary when it's
+  # available and fall back to the documented defaults when it isn't.
+  local config_dir=""
+  if command -v lazygit >/dev/null 2>&1; then
+    config_dir="$(lazygit --print-config-dir 2>/dev/null || true)"
+  fi
+  if [ -z "$config_dir" ]; then
+    if [ "$(uname)" = "Darwin" ]; then
+      config_dir="$HOME/Library/Application Support/lazygit"
+    else
+      config_dir="${XDG_CONFIG_HOME:-$HOME/.config}/lazygit"
+    fi
+  fi
+  _conditionally_create_symlink "$DOTFILES/lazygit/config.yml" \
+    "$config_dir/config.yml"
+}
+
 main() {
   # Populate vendored submodules (powerlevel10k, tmux-menus, tmux-themepack).
   git -C "$DOTFILES" submodule update --init --recursive
@@ -140,6 +158,7 @@ main() {
   vim_stuff
   zsh_stuff
   tmux_stuff
+  lazygit_stuff
 }
 
 # Only auto-run when executed directly, so the file can be sourced for testing.
