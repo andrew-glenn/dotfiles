@@ -332,6 +332,79 @@ _move_window() {
   fi
 }
 
+_dock_window() {
+  local cur_sess cur_win US BLUE YELLOW DIM RST candidates selection
+  local target_pane_id target_cmd flag replace choice panes first_pane anchor p
+
+  cur_sess=$(tmux display-message -p '#S')
+  cur_win=$(tmux display-message -p '#I')
+
+  US=$'\x1f'
+  BLUE="\033[1;34m"
+  YELLOW="\033[0;33m"
+  DIM="\033[0;90m"
+  RST="\033[0m"
+
+  candidates=$(
+    tmux list-panes -s -t "$cur_sess" \
+      -F "#{window_index}${US}#{pane_index}${US}#{window_name}${US}#{pane_current_command}${US}#{pane_id}" |
+    while IFS="$US" read -r win pane wname cmd pane_id; do
+      [ "$win" = "$cur_win" ] && continue
+      printf "${BLUE}%-12s${RST} ${YELLOW}%-18s${RST} ${DIM}%s${RST}${US}%s${US}%s\n" \
+        "${win}.${pane}" "$wname" "$cmd" "$cmd" "$pane_id"
+    done
+  )
+
+  if [ -z "$candidates" ]; then
+    tmux display "No other panes in session ${cur_sess}"
+    return 0
+  fi
+
+  selection=$(printf '%s\n' "$candidates" |
+    fzf --ansi --reverse --delimiter="$US" --with-nth=1 \
+        --header="Move window ${cur_sess}:${cur_win} into a pane" \
+        --prompt='dock into › ') || return 0
+
+  target_cmd=$(printf '%s' "$selection" | awk -F "$US" '{print $2}' | xargs)
+  target_pane_id=$(printf '%s' "$selection" | awk -F "$US" '{print $3}' | xargs)
+  [ -z "$target_pane_id" ] && return 0
+
+  if [[ "$target_cmd" =~ ^(zsh|bash|fish|sh|dash)$ ]]; then
+    replace=1
+    flag="-v"
+  else
+    replace=0
+    choice=$(printf '%s\n' 'below' 'right' 'above' 'left' |
+      fzf --reverse --header="Split ${target_cmd} pane where?" --prompt='split › ') || return 0
+    case "$choice" in
+      below) flag="-v" ;;
+      right) flag="-h" ;;
+      above) flag="-vb" ;;
+      left)  flag="-hb" ;;
+      *) return 0 ;;
+    esac
+  fi
+
+  panes=$(tmux list-panes -t "${cur_sess}:${cur_win}" -F '#{pane_id}')
+  first_pane=""
+  anchor="$target_pane_id"
+  while read -r p; do
+    [ -z "$p" ] && continue
+    tmux join-pane $flag -s "$p" -t "$anchor" 2>/dev/null || break
+    [ -z "$first_pane" ] && first_pane="$p"
+    anchor="$p"
+  done <<< "$panes"
+
+  [ -z "$first_pane" ] && return 0
+
+  if [ "$replace" = "1" ]; then
+    tmux kill-pane -t "$target_pane_id" 2>/dev/null || true
+  fi
+
+  tmux select-window -t "$first_pane"
+  tmux select-pane -t "$first_pane"
+}
+
 _new_session() {
   local start_dir="${1:-$HOME}"
   local out query pick name
@@ -416,6 +489,9 @@ case "${1}" in
     ;;
   "move_window")
     _move_window
+    ;;
+  "dock_window")
+    _dock_window
     ;;
   "new_session")
     _new_session "${2}"
