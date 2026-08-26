@@ -332,6 +332,25 @@ _move_window() {
   fi
 }
 
+_lazygit() {
+  local bin
+  bin="${LAZYGIT:-}"
+  [ -z "$bin" ] && bin=$(command -v lazygit 2>/dev/null)
+  [ -z "$bin" ] && bin=$(zsh -lc 'command -v lazygit' 2>/dev/null)
+  [ -z "$bin" ] && [ -x "${HOME}/.local/share/mise/shims/lazygit" ] \
+    && bin="${HOME}/.local/share/mise/shims/lazygit"
+  [ -z "$bin" ] && [ -x "${HOME}/.local/bin/mise" ] \
+    && bin=$("${HOME}/.local/bin/mise" which lazygit 2>/dev/null)
+
+  if [ -z "$bin" ] || [ ! -x "$bin" ]; then
+    printf 'lazygit not found in PATH (set $LAZYGIT to override)\n' >&2
+    read -rsk1 2>/dev/null || read -r
+    return 1
+  fi
+
+  exec "$bin" "$@"
+}
+
 _dock_window() {
   local cur_sess cur_win US BLUE YELLOW DIM RST candidates selection
   local target_pane_id target_cmd flag replace choice panes first_pane anchor p
@@ -492,6 +511,10 @@ case "${1}" in
     ;;
   "dock_window")
     _dock_window
+    ;;
+  "lazygit")
+    shift
+    _lazygit "$@"
     ;;
   "new_session")
     _new_session "${2}"
