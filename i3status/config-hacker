@@ -1,10 +1,11 @@
-# i3status — phosphor green theme
+# i3status — phosphor green theme (l33t telemetry build)
+# Nerd Font glyphs as labels; live CPU usage + package temp.
 # see "man i3status" for documentation.
 
 general {
         output_format = "i3bar"
         colors = true
-        interval = 5
+        interval = 2
         color_good     = "#00ff00"
         color_degraded = "#33aa00"
         color_bad      = "#ff5555"
@@ -13,47 +14,64 @@ general {
 
 order += "wireless _first_"
 order += "ethernet _first_"
-order += "battery all"
-order += "disk /"
+order += "cpu_usage"
+order += "cpu_temperature 6"
 order += "load"
 order += "memory"
+order += "disk /"
+order += "battery all"
 order += "tztime local"
 
 wireless _first_ {
-        format_up = "<span color='#005500'>wifi</span> %essid %quality"
-        format_down = "<span color='#005500'>wifi</span> <span color='#ff5555'>down</span>"
+        format_up = "<span color='#008800'></span> %essid %quality"
+        format_down = "<span color='#008800'></span> <span color='#ff5555'>down</span>"
 }
 
 ethernet _first_ {
-        format_up = "<span color='#005500'>eth</span> %ip"
-        format_down = "<span color='#005500'>eth</span> <span color='#ff5555'>down</span>"
+        format_up = "<span color='#008800'></span> %ip"
+        format_down = "<span color='#008800'></span> <span color='#ff5555'>down</span>"
+}
+
+cpu_usage {
+        format = "<span color='#008800'></span> %usage"
+        max_threshold = 85
+        degraded_threshold = 60
+        format_above_degraded_threshold = "<span color='#008800'></span> <span color='#33aa00'>%usage</span>"
+        format_above_threshold = "<span color='#008800'></span> <span color='#ff5555'>%usage</span>"
+}
+
+cpu_temperature 6 {
+        format = "<span color='#008800'></span> %degrees°C"
+        max_threshold = 85
+        format_above_threshold = "<span color='#008800'></span> <span color='#ff5555'>%degrees°C</span>"
+        path = "/sys/class/thermal/thermal_zone6/temp"
+}
+
+load {
+        format = "<span color='#008800'></span> %1min"
+}
+
+memory {
+        format = "<span color='#008800'></span> %used"
+        threshold_degraded = "1G"
+        format_degraded = "<span color='#008800'></span> <span color='#ff5555'>%available</span>"
+}
+
+disk "/" {
+        format = "<span color='#008800'></span> %avail"
 }
 
 battery all {
-        format = "<span color='#005500'>bat</span> %status %percentage"
+        format = "<span color='#008800'>%status</span> %percentage"
         format_down = ""
-        status_chr = "↯"
-        status_bat = "▼"
+        status_chr = ""
+        status_bat = ""
         status_unk = "?"
-        status_full = "●"
+        status_full = ""
         low_threshold = 15
         threshold_type = percentage
 }
 
-disk "/" {
-        format = "<span color='#005500'>disk</span> %avail"
-}
-
-load {
-        format = "<span color='#005500'>load</span> %1min"
-}
-
-memory {
-        format = "<span color='#005500'>mem</span> %used"
-        threshold_degraded = "1G"
-        format_degraded = "<span color='#005500'>mem</span> <span color='#ff5555'>%available</span>"
-}
-
 tztime local {
-        format = "<span color='#005500'>%a</span> %Y-%m-%d <span color='#005500'>·</span> %H:%M"
+        format = "<span color='#008800'></span> %Y-%m-%d <span color='#008800'>·</span> %H:%M:%S"
 }

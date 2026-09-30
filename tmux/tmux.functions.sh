@@ -1,25 +1,121 @@
 #!/usr/bin/env zsh
+# Portable short-hostname: `hostname -s` isn't guaranteed to exist (it's
+# missing on some minimal hosts, which silently dumped us into the default
+# theme). Try the cheapest reliable sources in order, strip any domain.
+_short_hostname() {
+  local h=""
+  if [ -n "${HOSTNAME:-}" ]; then h="$HOSTNAME"
+  elif command -v hostname >/dev/null 2>&1; then h="$(hostname 2>/dev/null)"
+  elif [ -r /etc/hostname ]; then h="$(cat /etc/hostname 2>/dev/null)"
+  else h="$(uname -n 2>/dev/null)"
+  fi
+  # first label only (strip .domain), lowercase for stable matching
+  h="${h%%.*}"
+  printf '%s' "$h" | tr '[:upper:]' '[:lower:]'
+}
+
+# Named palette table. Each theme is 4 true-color hex values:
+#   text   = primary window/text color
+#   dim    = separators, idle windows, quiet detail
+#   accent = active window, session name, borders — the signature color
+#   actv   = activity flash (brighter kick of the accent hue)
+# Add a theme by adding a case here; wire it to a host in _theme_for_host.
+_palette() {
+  case "$1" in
+    amber)     printf '%s' "#ffcf8f #8a5a1f #ff9e3b #ffd24a|amber (Mr. Robot)" ;;
+    cyan)      printf '%s' "#b8f0ff #1f5a6a #38d9ff #7cf3ff|cyan (devbox)" ;;
+    pink)      printf '%s' "#ffe0f0 #7a1f52 #ff3aa8 #ff7ac6|hot pink" ;;
+    matrix)    printf '%s' "#c8ffc8 #1f6a2f #39ff5a #86ff9e|matrix green" ;;
+    synthwave) printf '%s' "#f5d0ff #4a2a6a #b06aff #ff6ad5|synthwave" ;;
+    nord)      printf '%s' "#eceff4 #4c566a #88c0d0 #8fbcbb|nord frost" ;;
+    gruvbox)   printf '%s' "#ebdbb2 #7c6f64 #fabd2f #fe8019|gruvbox" ;;
+    blood)     printf '%s' "#ffd6d6 #7a1f1f #ff3b3b #ff7a7a|blood red" ;;
+    *)         printf '%s' "#ffcf8f #8a5a1f #ff9e3b #ffd24a|amber (Mr. Robot)" ;;
+  esac
+}
+
+# Host -> theme name. This is the per-host map: give each machine its own look
+# so you know at a glance which box you're on. Unknown hosts fall through to a
+# stable default. Uses case-globs so you can match host families (prod-*, etc).
+_theme_for_host() {
+  case "$1" in
+    archbox)       printf 'blood' ;;
+    devbox)        printf 'cyan' ;;
+    *radioshack*)  printf 'pink' ;;
+    *matrix*|*neo*) printf 'matrix' ;;
+    *prod*)        printf 'blood' ;;      # loud on production, stay careful
+    *)             printf 'amber' ;;
+  esac
+}
+
 _host_specific_theme() {
   # Sets palette user options consumed by style strings in tmux.conf
   # (#{@c_text}, #{@c_dim}, #{@c_accent}, #{@c_actv}) plus the two
   # display-panes-*-colour settings, which don't accept format expansion.
-  local text dim accent actv label
-  case "$(hostname -s)" in
-    devbox)
-      text=159; dim=24;  accent=45;  actv=87;  label="cyan (devbox)" ;;
-    *radioshack*)
-      text=255; dim=89;  accent=198; actv=201; label="hot pink" ;;
-    *)
-      text=148; dim=22;  accent=118; actv=161; label="matrix/molokai" ;;
-  esac
+  local host theme spec text dim accent actv label
+  host="$(_short_hostname)"
 
-  tmux set -g @c_text   "colour${text}"
-  tmux set -g @c_dim    "colour${dim}"
-  tmux set -g @c_accent "colour${accent}"
-  tmux set -g @c_actv   "colour${actv}"
-  tmux set -g display-panes-colour        "colour${dim}"
-  tmux set -g display-panes-active-colour "colour${accent}"
-  tmux display "Theme: $(hostname -s) → ${label}"
+  # Explicit override wins if you ever want it: `tmux set -g @theme <name>`
+  # in ~/.tmux.local.conf on a specific box.
+  theme="$(tmux show -gv @theme 2>/dev/null)"
+  [ -n "$theme" ] || theme="$(_theme_for_host "$host")"
+
+  spec="$(_palette "$theme")"
+  label="${spec#*|}"
+  spec="${spec%|*}"
+  # spec is now "text dim accent actv". Split on whitespace in a way that works
+  # in BOTH zsh (no auto word-split) and bash: `read` splits on $IFS reliably.
+  read -r text dim accent actv <<EOF
+$spec
+EOF
+
+  tmux set -g @c_text   "$text"
+  tmux set -g @c_dim    "$dim"
+  tmux set -g @c_accent "$accent"
+  tmux set -g @c_actv   "$actv"
+  tmux set -g display-panes-colour        "$dim"
+  tmux set -g display-panes-active-colour "$accent"
+  # clock-mode-colour doesn't accept #{format} expansion, so set the concrete
+  # accent hex here to keep the prefix-t clock in sync with the theme.
+  tmux setw -g clock-mode-colour "$accent"
+  tmux display "Theme: ${host:-unknown} → ${label}"
+}
+
+# Ordered list of themes for cycling. Keep in sync with _palette().
+_THEME_ORDER="amber cyan pink matrix synthwave nord gruvbox blood"
+
+# Cycle to the next theme in _THEME_ORDER (wraps around), pin it via @theme so
+# _host_specific_theme honors it, then re-apply so the change is instant.
+# Direction: "next" (default) or "prev".
+_theme_cycle() {
+  local dir="${1:-next}" cur first last prev found next t
+  cur="$(tmux show -gv @theme 2>/dev/null)"
+  [ -n "$cur" ] || cur="$(_theme_for_host "$(_short_hostname)")"
+
+  next=""; prev=""; first=""; last=""; found=""
+  # NOTE: zsh does not word-split unquoted vars (unlike bash), so a plain
+  # `for t in $_THEME_ORDER` iterates once over the whole string. Convert the
+  # space-separated list to newlines and read line-by-line — reliable in both.
+  while read -r t; do
+    [ -n "$t" ] || continue
+    [ -n "$first" ] || first="$t"
+    last="$t"
+    if [ -n "$found" ] && [ -z "$next" ]; then next="$t"; fi
+    if [ "$t" = "$cur" ]; then found=1; fi
+    [ -n "$found" ] || prev="$t"
+  done <<EOF
+$(printf '%s' "$_THEME_ORDER" | tr ' ' '\n')
+EOF
+  # wrap: next-of-last -> first; prev-of-first -> last
+  [ -n "$next" ] || next="$first"
+  [ -n "$prev" ] || prev="$last"
+
+  if [ "$dir" = "prev" ]; then
+    tmux set -g @theme "$prev"
+  else
+    tmux set -g @theme "$next"
+  fi
+  _host_specific_theme
 }
 _old_new_status() {
   while getopts 'x:X:w:g:d:n:' opt "$@"; do
@@ -494,8 +590,12 @@ case "${1}" in
   "pane_jumper")
     _pane_jumper
     ;;
+
   "theme")
     _host_specific_theme
+    ;;
+  "theme_cycle")
+    _theme_cycle "${2:-next}"
     ;;
   "nina")
     _nina

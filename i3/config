@@ -32,7 +32,7 @@ exec --no-startup-id dex --autostart --environment i3
 exec_always --no-startup-id sh -c 'pkill -x xautolock; command -v xautolock >/dev/null && xautolock -time 5 -locker ${HOME}/bin/lockscreen -detectsleep &'
 
 # manual lock
-bindsym $mod+Shift+x exec --no-startup-id ${HOME}/bin/lockscreen
+bindsym $mod+l exec --no-startup-id ${HOME}/bin/lockscreen
 
 # screensaver / idle timeout — fire after 5 min idle, screen off after 10
 exec_always --no-startup-id xset s 300 300 dpms 600 600 600
@@ -55,15 +55,15 @@ exec_always --no-startup-id xrdb -merge ${HOME}/.Xresources
 exec_always --no-startup-id xsetroot -cursor_name left_ptr
 exec --no-startup-id dbus-launch --exit-with-session sh -c 'XDG_CURRENT_DESKTOP=i3 /usr/libexec/xdg-desktop-portal & /usr/libexec/xdg-desktop-portal-gtk &'
 # gaps
-gaps inner 10
-gaps outer 4
+gaps inner 6
+gaps outer 2
 smart_gaps on
 smart_borders on
 
 # toggle gaps quickly
 bindsym $mod+g          gaps inner current plus 4
 bindsym $mod+Shift+g    gaps inner current minus 4
-bindsym $mod+Ctrl+g     gaps inner current set 10
+bindsym $mod+Ctrl+g     gaps inner current set 6
 
 # Use pactl to adjust volume in PulseAudio.
 set $refresh_i3status killall -SIGUSR1 i3status
@@ -77,10 +77,6 @@ bindsym XF86MonBrightnessUp   exec --no-startup-id brightnessctl set +5%
 bindsym XF86MonBrightnessDown exec --no-startup-id brightnessctl set 5%-
 bindsym $mod+F10 exec --no-startup-id ${HOME}/bin/display-mode toggle
 
-# Print Screen for screenshots
-bindsym Print exec ${HOME}/bin/screenshot.sh full
-bindsym Shift+Print exec ${HOME}/bin/screenshot.sh region
-bindsym $mod+Print exec ${HOME}/bin/screenshot.sh window
 
 # Use Mouse+$mod to drag floating windows to their wanted position
 floating_modifier $mod
@@ -89,15 +85,30 @@ floating_modifier $mod
 # or left-clicking anywhere into the window while holding the floating modifier.
 tiling_drag modifier titlebar
 
+# keep focus put: don't steal focus just because the cursor drifts over another
+# window. Focus only changes via keyboard nav or an explicit click.
+focus_follows_mouse no
+
 # window colors — managed by ~/bin/display-mode
 include colors-active.conf
 
 # thin borders, no title bars
-default_border pixel 2
-default_floating_border pixel 2
+default_border pixel 1
+default_floating_border pixel 1
 
 # start a terminal
-bindsym $mod+Return exec /usr/bin/alacritty
+bindsym $mod+Return exec /usr/bin/kitty
+
+# quake-style dropdown "scratchpad" terminal: a floating kitty you summon and
+# dismiss with one key. First press spawns it (tagged so we can find it again),
+# every press after toggles it in/out of the scratchpad.
+for_window [instance="dropterm"] floating enable, resize set 1200 600, move scratchpad, border pixel 2
+# $mod+grave toggles it: scratchpad show hides it if visible / reveals it if
+# hidden. If it doesn't exist yet, i3 reports no match and we spawn one (which
+# the for_window rule immediately tucks into the scratchpad, ready to summon).
+bindsym $mod+grave exec --no-startup-id sh -c 'i3-msg "[instance=dropterm] scratchpad show" | grep -q "\"success\":true" || kitty --class dropterm --name dropterm'
+
+# ($mod+F10 toggles the hacker/daylight theme via display-mode, above)
 
 # kill focused window
 bindsym $mod+Shift+q kill
@@ -107,11 +118,13 @@ bindsym $mod+d       exec --no-startup-id rofi -show drun
 bindsym $mod+Shift+d exec --no-startup-id rofi -show run
 bindsym $mod+Tab     exec --no-startup-id rofi -show window
 
+# Fullscreen screenshot with scrot (Print Screen key)
+bindsym Print exec --no-startup-id scrot ~/Pictures/screenshot_%Y-%m-%d_%H-%M-%S.png
+
+# Select area screenshot with maim (Mod+Shift+s)
+bindsym $mod+Shift+Print exec --no-startup-id maim -s ~/Pictures/screenshot_$(date +%Y-%m-%d_%H-%M-%S).png
+
 # change focus
-bindsym $mod+j focus left
-bindsym $mod+k focus down
-bindsym $mod+l focus up
-bindsym $mod+semicolon focus right
 
 # alternatively, you can use the cursor keys:
 bindsym $mod+Left focus left
@@ -182,17 +195,20 @@ bindsym $mod+8 workspace number $ws8
 bindsym $mod+9 workspace number $ws9
 bindsym $mod+0 workspace number $ws10
 
-# move focused container to workspace
-bindsym $mod+Shift+1 move container to workspace number $ws1
-bindsym $mod+Shift+2 move container to workspace number $ws2
-bindsym $mod+Shift+3 move container to workspace number $ws3
-bindsym $mod+Shift+4 move container to workspace number $ws4
-bindsym $mod+Shift+5 move container to workspace number $ws5
-bindsym $mod+Shift+6 move container to workspace number $ws6
-bindsym $mod+Shift+7 move container to workspace number $ws7
-bindsym $mod+Shift+8 move container to workspace number $ws8
-bindsym $mod+Shift+9 move container to workspace number $ws9
-bindsym $mod+Shift+0 move container to workspace number $ws10
+# move focused container to workspace AND follow it there
+bindsym $mod+Shift+1 move container to workspace number $ws1; workspace number $ws1
+bindsym $mod+Shift+2 move container to workspace number $ws2; workspace number $ws2
+bindsym $mod+Shift+3 move container to workspace number $ws3; workspace number $ws3
+bindsym $mod+Shift+4 move container to workspace number $ws4; workspace number $ws4
+bindsym $mod+Shift+5 move container to workspace number $ws5; workspace number $ws5
+bindsym $mod+Shift+6 move container to workspace number $ws6; workspace number $ws6
+bindsym $mod+Shift+7 move container to workspace number $ws7; workspace number $ws7
+bindsym $mod+Shift+8 move container to workspace number $ws8; workspace number $ws8
+bindsym $mod+Shift+9 move container to workspace number $ws9; workspace number $ws9
+bindsym $mod+Shift+0 move container to workspace number $ws10; workspace number $ws10
+
+# jump back to the previous workspace (toggle between two workspaces)
+bindsym $mod+Escape workspace back_and_forth
 
 # reload the configuration file
 bindsym $mod+Shift+c reload

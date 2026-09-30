@@ -1,2 +1,5 @@
 CLAUDE.md
 scripts/.kiro
+
+# timestamped local backups (git history is the real safety net)
+*.bak.*
