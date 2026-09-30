@@ -11,6 +11,8 @@ setopt HIST_IGNORE_SPACE
 setopt HIST_REDUCE_BLANKS
 setopt HIST_VERIFY
 
+(( $+commands[nvim] )) && export EDITOR=nvim || export EDITOR=vim
+
 echo -ne '\e[4 q'
 
 # p10k instant prompt (must be first — before any console output)
@@ -201,3 +203,6 @@ sp() {
 _chpwd_refresh_prompt() { zle && zle reset-prompt }
 autoload -Uz add-zsh-hook
 add-zsh-hook chpwd _chpwd_refresh_prompt
+
+# Quick daily notes
+today-notes() { mkdir -p ~/.notes && ${EDITOR:-vim} ~/.notes/$(date +%Y-%m-%d).txt }
