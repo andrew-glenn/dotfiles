@@ -520,15 +520,33 @@ _dock_window() {
 
 _new_session() {
   local start_dir="${1:-$HOME}"
-  local out query pick name
+  local out rc query pick name
   out="$(tmux list-sessions -F '#S' 2>/dev/null \
     | fzf --reverse --no-sort --print-query \
           --header='Type a name to create, or pick one to switch' \
           --prompt='new session › ')"
+  rc=$?
+
+  # fzf still prints the query when the picker is aborted (exit 130), so
+  # without this check pressing Escape mid-typing would create a session from
+  # the half-finished name. Exit 1 (no match) is a normal create and is kept.
+  # Named `rc` rather than `status`, which is read-only in zsh.
+  [ "${rc}" -ge 2 ] && return 0
 
   query="$(printf '%s\n' "${out}" | sed -n 1p)"
   pick="$(printf '%s\n' "${out}" | sed -n 2p)"
-  name="${pick:-${query}}"
+
+  # A typed name always wins over fzf's highlighted row. fzf matches fuzzily,
+  # so typing "dot" highlights an existing "dotfiles" and taking the pick
+  # meant a new session could never be named a substring of an existing one --
+  # it silently switched instead. The pick is only used when nothing was
+  # typed, i.e. the browse-and-select case. Whether the typed name switches or
+  # creates is then decided solely by the exact-match test below.
+  if [ -n "${query}" ]; then
+    name="${query}"
+  else
+    name="${pick}"
+  fi
   name="$(printf '%s' "${name}" | tr '.:' '__' | tr -d '[:space:]')"
   [ -z "${name}" ] && return 0
 
