@@ -364,18 +364,16 @@ _zen() {
   fi
 }
 
-_nina() {
+_sp() {
   command -v kiro-cli >/dev/null 2>&1 || return 0
-  if tmux has-session -t nina 2>/dev/null; then
-    tmux switch-client -t nina
+  # sp lives in scratch:0. If scratch exists, just switch to it.
+  if tmux has-session -t scratch 2>/dev/null; then
+    tmux switch-client -t scratch:0
     return
   fi
-  tmux new-session -d -s nina 'kiro-cli chat --agent nina'
-  tmux set-option -t nina remain-on-exit on
-  tmux set-hook -t nina pane-died 'respawn-window -t nina'
-  tmux set-hook -t nina session-closed \
-    'run-shell "if [ -f /tmp/.kill-nina ]; then rm -f /tmp/.kill-nina; else sleep 0.5 && tmux new-session -d -s nina \"kiro-cli chat --agent nina\" && tmux set-option -t nina remain-on-exit on && tmux set-hook -t nina pane-died \"respawn-window -t nina\"; fi"'
-  tmux switch-client -t nina
+  # Bootstrap scratch with sp as window 0 (global hooks handle naming + respawn)
+  tmux new-session -d -e TMUX_SCRATCH_SESSION=true -s scratch 'kiro-cli chat --agent sp'
+  tmux switch-client -t scratch:0
 }
 
 _move_window() {
@@ -597,8 +595,8 @@ case "${1}" in
   "theme_cycle")
     _theme_cycle "${2:-next}"
     ;;
-  "nina")
-    _nina
+  "sp")
+    _sp
     ;;
   "zen")
     _zen
