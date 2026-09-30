@@ -1,11 +1,37 @@
 #!/bin/bash
 # nv — per-directory Neovim server. Second pane, same dir = same session.
+
+# Find nvim binary — check both /home and /local/home (tmux uses different mount)
+NVIM=""
+for prefix in "$HOME" "/home/$(whoami)" "/local/home/$(whoami)"; do
+  candidate="$prefix/workplace/.neovim/env/Neovim-0.x/runtime/bin/nvim"
+  if [ -x "$candidate" ]; then
+    NVIM="$candidate"
+    break
+  fi
+done
+
+# Fallback to PATH
+if [ -z "$NVIM" ]; then
+  for candidate in "/usr/local/bin/nvim" "/usr/bin/nvim"; do
+    if [ -x "$candidate" ]; then
+      NVIM="$candidate"
+      break
+    fi
+  done
+fi
+
+if [ -z "$NVIM" ]; then
+  echo "nvim not found" >&2
+  exit 1
+fi
+
 SOCK="/tmp/nvim-$(echo "$PWD" | md5sum | cut -c1-8).sock"
 
-if nvim --server "$SOCK" --remote-send "" 2>/dev/null; then
-  exec nvim --remote-ui --server "$SOCK" "$@"
+if "$NVIM" --server "$SOCK" --remote-send "" 2>/dev/null; then
+  exec "$NVIM" --remote-ui --server "$SOCK" "$@"
 else
-  nvim --headless --listen "$SOCK" &
+  "$NVIM" --headless --listen "$SOCK" &
   sleep 0.3
-  exec nvim --remote-ui --server "$SOCK" "$@"
+  exec "$NVIM" --remote-ui --server "$SOCK" "$@"
 fi
