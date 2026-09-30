@@ -95,11 +95,42 @@ archlinux_stuff() {
   _conditionally_create_symlink "$DOTFILES/xenv/.xinitrc" "$HOME/.xinitrc"
   _conditionally_create_symlink "$DOTFILES/xenv/.Xresources" "$HOME/.Xresources"
 
-  # kitty terminal
-  _conditionally_create_symlink "$DOTFILES/kitty" "$xdg_config/kitty"
+  # kitty terminal is handled by kitty_stuff(), which runs on both platforms
 
   # neovim
   _conditionally_create_symlink "$DOTFILES/neovim" "$xdg_config/nvim"
+}
+
+# Kitty is configured on both platforms, so this runs unconditionally. The
+# repo holds one shared kitty.conf plus a hosts/ file per machine, wired up
+# through two generated symlinks that are deliberately untracked.
+kitty_stuff() {
+  local xdg_config="${XDG_CONFIG_HOME:-$HOME/.config}"
+  _conditionally_create_symlink "$DOTFILES/kitty" "$xdg_config/kitty"
+
+  # Pick the per-host config: an exact short-hostname match wins, otherwise
+  # fall back to the platform file. Written as a *relative* link so it stays
+  # valid regardless of where the repo lives or which machine reads it.
+  local short_host target
+  short_host="$(hostname -s 2>/dev/null || uname -n)"
+  short_host="${short_host%%.*}"
+  if [ -f "$DOTFILES/kitty/hosts/${short_host}.conf" ]; then
+    target="hosts/${short_host}.conf"
+  elif [ "$(uname)" = "Darwin" ]; then
+    target="hosts/darwin.conf"
+  else
+    target="hosts/linux.conf"
+  fi
+  ln -sfn "$target" "$DOTFILES/kitty/host-active.conf"
+  echo "kitty host config -> ${target}"
+
+  # colors-active.conf is generated the same way. Recreate it when missing or
+  # dangling ([ -e ] is false for a broken link), which is the state a machine
+  # ends up in after syncing a link that pointed at the other machine's paths.
+  if [ ! -e "$DOTFILES/kitty/colors-active.conf" ]; then
+    ln -sfn "colors-hacker.conf" "$DOTFILES/kitty/colors-active.conf"
+    echo "kitty colors -> colors-hacker.conf (default)"
+  fi
 }
 
 ssh_stuff() {
@@ -154,6 +185,7 @@ main() {
 
   homebrew_stuff
   archlinux_stuff
+  kitty_stuff
   ssh_stuff
   vim_stuff
   zsh_stuff

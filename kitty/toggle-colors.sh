@@ -34,8 +34,11 @@ pick_target() {
 
 target="$(pick_target "$1")"
 
-# Swap the symlink
-ln -sf "$target" "$link"
+# Swap the symlink. Stored relative to the kitty dir on purpose: an absolute
+# target bakes in this machine's $HOME, and if the link is ever committed it
+# arrives on the other box pointing at a path that doesn't exist there, which
+# silently breaks kitty.conf's include and drops every color to the default.
+ln -sfn "$(basename "$target")" "$link"
 
 # Reload all running kitty instances (socket has PID suffix)
 if command -v kitty &>/dev/null; then
