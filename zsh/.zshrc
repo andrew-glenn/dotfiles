@@ -13,8 +13,6 @@ setopt HIST_VERIFY
 
 (( $+commands[nvim] )) && export EDITOR=nvim || export EDITOR=vim
 
-echo -ne '\e[4 q'
-
 # p10k instant prompt (must be first — before any console output)
 if [[ -z "$SKIP_OMZ" ]]; then
   if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then 
@@ -174,7 +172,8 @@ source_if_exists ${HOME}/.zshrc.local
 # aliases
 alias ll="ls -lah"
 # hooks
-eval "$(direnv hook zsh)"
+# silence direnv status lines (stderr) while keeping the env eval (stdout)
+eval "$(direnv hook zsh | sed 's| export zsh)| export zsh 2>/dev/null)|')"
 
 pyenv_if_exists
 
@@ -206,3 +205,7 @@ add-zsh-hook chpwd _chpwd_refresh_prompt
 
 # Quick daily notes
 today-notes() { mkdir -p ~/.notes && ${EDITOR:-vim} ~/.notes/$(date +%Y-%m-%d).txt }
+
+# set steady-underline cursor (runs after prompt renders; safe with p10k instant prompt)
+_set_cursor_shape() { print -n '\e[4 q' }
+add-zsh-hook precmd _set_cursor_shape
