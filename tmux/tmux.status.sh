@@ -2,7 +2,7 @@
 # Status-bar helpers. Each sub-command prints a tmux-format-ready snippet
 # (may include #[fg=...] tags) to stdout.
 #
-# Usage: tmux.status.sh <battery|utc|ssh|load>
+# Usage: tmux.status.sh <battery|utc|ssh|load|disk>
 
 set -eu
 
@@ -88,11 +88,56 @@ _ssh() {
 
 # ---
 
+# Filesystem usage percentage for a mount point (default /). Reads distinctly
+# as DISK via a muted-teal base color, separate from the battery's warm
+# green/amber/red palette. When usage crosses the alarm threshold it emits a
+# bold white-on-red block that SELF-BLINKS (toggles style every other second)
+# rather than relying on the terminal's SGR blink attribute, which tmux often
+# strips. Self-blink needs the bar to repaint each second, i.e.
+# `set -g status-interval 1`.
+#
+# This helper owns BOTH surrounding dividers so it can control spacing per
+# state: a normal single space inside the dividers below threshold, but a
+# tight block butted right against the dividers when alarming.
+#
+# Usage: disk [mount] [threshold]   (defaults: / 90)
+_disk() {
+  local mount=${1:-/} threshold=${2:-90}
+
+  # Match the themed divider color (@c_dim). Fall back if the option is unset.
+  local dim div
+  dim=$(tmux show -gv @c_dim 2>/dev/null || true)
+  [ -n "${dim:-}" ] || dim="colour238"
+  div="#[fg=${dim}]│#[default]"
+
+  local pct
+  pct=$(df -P "${mount}" 2>/dev/null | awk 'NR==2 {gsub(/%/,"",$5); print $5}')
+  [ -n "${pct:-}" ] || { printf '%s NODISK %s' "${div}" "${div}"; return; }
+
+  if [ "${pct}" -ge "${threshold}" ]; then
+    # Alarm: self-blink a bold white-on-red block. Keep the inner padding
+    # (space inside the block) but drop the outer space so it hugs the dividers.
+    local body
+    if [ "$(( $(date +%s) % 2 ))" -eq 0 ]; then
+      body='#[fg=colour231,bg=colour196,bold] '"${pct}"'% #[default]'
+    else
+      body='#[fg=colour196,bg=default,bold] '"${pct}"'% #[default]'
+    fi
+    printf '%s%s%s' "${div}" "${body}" "${div}"
+  else
+    # Normal: muted teal, single space on each side inside the dividers.
+    printf '%s #[fg=colour66]%s%%#[default] %s' "${div}" "${pct}" "${div}"
+  fi
+}
+
+# ---
+
 cmd=${1:-}
 case "${cmd}" in
   battery) _battery ;;
   utc)     _utc ;;
   ssh)     _ssh "${2:-}" ;;
   load)    _load ;;
-  *)       printf 'Usage: %s <battery|utc|ssh|load>\n' "$0" >&2; exit 1 ;;
+  disk)    shift; _disk "$@" ;;
+  *)       printf 'Usage: %s <battery|utc|ssh|load|disk>\n' "$0" >&2; exit 1 ;;
 esac
